@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block container %}
+<div class="row mt-5">
+  <h1>Add Jobs</h1>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    Add jobs here. I use pythons shlex for lexical analysis of the commands
+    entered here so non POSIX shells might not behave as expected.
+  </div>
+</div>
+
+<div class="row mt-5">
+  <div class="col-sm-12">
+    <form action="{{ url_for('addJobs') }}" method="post">
+      <div class="form-group">
+      <label for="Job Name">Job Name</label>
+        <input type="text" name="jobName"
+        class="form-control" placeholder="My-Job-00">
+      </div>
+
+      <div class="form-group">
+        <label for="Output File">Output File</label>
+        <input type="text" name="outputFile"
+        class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="Job Command">Job Command</label>
+        <textarea name='jobCommand' class="form-control" rows="3"></textarea>
+      </div>
+      <input class="btn btn-primary" type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+
+<div class="row mt-5">
+  <h1>Batch Add Jobs</h1>
+</div>
+
+<div class="row mt-5">
+  <div class="col-sm-12">
+    This form can be used to submit multiple jobs. Use <code>;;;</code> to
+    separate jobs. A single job description should contain its name, output
+    file and command in that order, separated by <code>;;</code>. For example,
+    <div><code>
+        NAME00;;<br>
+        OUTPUTFILE00;;<br>
+        COMMAND00;;;<br>
+        <br>
+        NAME01;;<br>
+        OUTPUTFILE01;;<br>
+        COMMAND01;;;<br>
+    </code></div>
+  </div>
+</div>
+
+<div class="row mt-5">
+  <div class="col-sm-12">
+    <form action="{{ url_for('batchAddJobs') }}" method="post">
+      <div class="form-group">
+        <label for="Job Command">Job List</label>
+        <textarea name='jobList' class="form-control" rows="3"></textarea>
+      </div>
+      <input class="btn btn-primary" type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+
+{% endblock %}

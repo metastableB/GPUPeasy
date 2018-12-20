@@ -1,0 +1,20 @@
+<div class="col-sm-12">
+  {% for job in jobs %}
+  <div class="row mt-1 border border-primary rounded">
+    <div class="col-md-3">
+      Device: {{job.gpu}}
+    </div>
+    <div class="col-md-9">
+      <div class="row bg-secondary text-white">
+        <div class="col-sm-6">{{job.JID}}</div>
+        <div class="col-sm-6">{{job.Name}}</div>
+      </div>
+      <div class="row text-secondary mt-0">
+        <div class="col-sm-12">
+          {{job.Command}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

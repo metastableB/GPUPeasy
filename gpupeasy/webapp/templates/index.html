@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block container %}
+
+{% if errMessage is defined %}
+<div class="row mt-1 hide-5 bg-danger text-white">
+  <div class="col-md-12">
+    Error: {{ errMessage }}
+  </div>
+</div>
+{% endif %}
+
+{% if infoMessage is defined %}
+<div class="row mt-1 hide-5 bg-info text-white">
+  <div class="col-md-12">
+    Info: {{ infoMessage }}
+  </div>
+</div>
+{% endif %}
+
+{% if successMessage is defined %}
+<div class="row mt-1 hide-5 bg-success text-white">
+  <div class="col-md-12">
+    Success: {{ successMessage }}
+  </div>
+</div>
+{% endif %}
+
+<div class="row mt-5">
+  <div class="col-md-12">
+    <div class="row col-md-12">
+      <h2>Device Utilization</h2>
+    </div>
+    <div class="row col-sm-12" id="DeviceUtilization">
+      <div class="col-sm-12 ">
+        Loading . . .
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-5">
+  <div class="col-md-4">
+    <div class="row">
+      <div class="col-md-12 "><h2>Scheduled Jobs</h2></div>
+    </div>
+    <div class="row col-sm-12" id="ScheduledJobs">
+      <div class="col-sm-12 ">
+        Loading . . .
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="row">
+      <div class="col-md-12 "><h2>Successful Jobs</h2></div>
+    </div>
+    <div class="row col-sm-12" id="SuccessfulJobs">
+      <div class="col-sm-12 ">
+        Loading . . .
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="row">
+      <div class="col-md-12 "><h2>Failed Jobs</h2></div>
+    </div>
+    <div class="row col-sm-12" id="FailedJobs">
+      <div class="col-sm-12 ">
+        Loading . . .
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
