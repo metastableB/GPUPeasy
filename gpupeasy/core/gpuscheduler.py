@@ -52,6 +52,7 @@ class GPUSchedulerCore:
         self.__logger = logger
         if logger is None:
             self.__logger = Logger()
+        self.__logger.pInfo("Scheduler core initializing")
         self.__availableGPU = LockedList()
         for val in availableGPU:
             self.__availableGPU.append(val)
@@ -73,6 +74,8 @@ class GPUSchedulerCore:
         self.__succeededJobs = LockedList()
         self.__failedJobs = LockedList()
         self.__currAvailableGPUs = LockedList()
+        self.__logger.pDebug("Scheduler object: ", self)
+        self.__logger.pInfo("Scheduler core initialized")
 
     def __getNewJobId(self):
         # TODO: Should I bother reusing jobIDs? Or Overflows?
@@ -187,6 +190,9 @@ class GPUSchedulerCore:
         self.__daemonRunning = False
 
     def addNewJob(self, job):
+        if not self.__daemonRunning:
+            self.__logger.pWarn('Add job attempted while daemon not running')
+            return False, None
         # check if we can add a new job
         if len(self.__toScheduleJobs) >= self.__maxQueueSize:
             self.__logger.pError("Adding new job failed. Queue full.")
