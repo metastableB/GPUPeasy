@@ -4,6 +4,7 @@
 
 import os
 import shlex
+import re
 from flask import Flask, flash, redirect
 from flask import render_template, request, session, abort
 
@@ -19,7 +20,8 @@ backend = None
 @frontend.route("/")
 @frontend.route("/home")
 def index():
-    return render_template('index.html')
+    allDiv = backend.getAvailableGPUList()
+    return render_template('index.html', allDevices=allDiv)
 
 @frontend.route("/deviceutilization")
 def getDeviceUtilization():
@@ -96,8 +98,11 @@ def addJobs():
     if request.method == 'GET':
         return render_template('addjobs.html')
     jobCommand = request.form['jobCommand']
-    jobName = request.form['jobName']
-    jobOutF = request.form['outputFile']
+    jobCommand = jobCommand.strip().replace('\n', ' ').replace('\r', ' ')
+    jobName = request.form['jobName'].strip().replace('\n', ' ')
+    jobName = jobName.replace('\r', ' ')
+    jobOutF = request.form['outputFile'].strip().replace('\n', ' ')
+    jobOutF = jobOutF.replace('\r', ' ')
     # TODO: This should be handled in javascript
     ret, msg = validateJob(jobName, jobOutF, jobCommand)
     if ret is False:
@@ -122,8 +127,9 @@ def addJobs():
 def batchAddJobs():
     if request.method == 'GET':
         return render_template('addjobs.html')
-
     jobList = request.form['jobList'].strip()
+    jobList = jobList.replace('\n', ' ').replace('\r', ' ')
+    jobList = re.sub(' +', ' ', jobList)
     jobList = jobList.split(';;;')
     jobList = [x.strip() for x in jobList]
     jobList = [x for x in jobList if len(x) > 0]
@@ -170,6 +176,8 @@ def batchAddJobs():
             return render_template('index.html', errMessage=retmsg)
 
         jobCommand = shlex.split(jobCommand)
+        jobCommand = [x.strip() for x in jobCommand]
+        print(jobCommand)
         job = Job(jobName, jobCommand, stdout=fp, stderr=fp)
         ret = backend.addNewJob(job)
         if ret is False:
@@ -181,9 +189,9 @@ def batchAddJobs():
 if __name__ == "__main__":
     logfile  = '/tmp/gpupeasy/logs.out'
     logfile = open(logfile, 'a+')
-    logger = Logger(fstdout=logfile, fstderr=logfile)
+    logger = Logger(fstdout=logfile, fstderr=logfile, debug=True)
 
-    gpuSch = GPUSchedulerCore(['0', '1'], wakesec=3, logger=logger)
+    gpuSch = GPUSchedulerCore(['1', '2', '3'], wakesec=3, logger=logger)
     gpuSch.startDaemon()
     backend = gpuSch
 

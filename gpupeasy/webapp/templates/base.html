@@ -31,8 +31,10 @@
     crossorigin="anonymous"></script>
     <!-- END BOOTSTRAP -->
 
+    <!-- Custom CSS -->
+    <link ref="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Custom javascript -->
-  <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
   </head>
   <body>
     <nav class="navbar navbar-light bg-light justify-content-between">

@@ -96,13 +96,15 @@ class GPUSchedulerCore:
                                     "exited with return code: %d" % rt)
                 self.__failedJobs.append(job)
                 idList.append(job.jobid)
-                continue
-            self.__logger.pSuccess("Process", job,
-                                   "exited with return code: %d" % rt)
-            self.__succeededJobs.append(job)
+            else:
+                self.__logger.pSuccess("Process", job,
+                                       "exited with return code: %d" % rt)
+                self.__succeededJobs.append(job)
             idList.append(job.jobid)
             gpu = job.gpu
             self.__currAvailableGPUs.push(gpu)
+            self.__logger.pDebug("Current available gpus",
+                                 self.getCurrAvailableGPUs())
         # There is no way to do this safely or cleanly other than using
         # markers. That is, mark objects for deletion and cleanup at different
         # points. I prefer to do this: Slow but cleaner (?).
@@ -114,6 +116,7 @@ class GPUSchedulerCore:
                 if job.jobid is not currId:
                     continue
                 self.__runningJobs.deleteValue(j, unsafe=True)
+                gpu = job.gpu
                 break
             self.__runningJobs.release()
 
@@ -224,6 +227,10 @@ class GPUSchedulerCore:
         self.__logger.pInfo("maxQueueSize updated to: %d" % maxQueueSize)
 
     def getAvailableGPUList(self):
+        val = self.__availableGPU.getCurrVals()
+        return val
+
+    def getCurrAvailableGPUs(self):
         val = self.__availableGPU.getCurrVals()
         return val
 

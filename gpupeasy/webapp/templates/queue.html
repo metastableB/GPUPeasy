@@ -1,12 +1,11 @@
 <div class="col-sm-12">
   {% for job in jobs %}
   <div class="row bg-primary text-white mt-1" >
-    <div class="col-sm-6">{{job.JID}}</div>
-    <div class="col-sm-6">{{job.Name}}</div>
+    <div class="col-sm-2">{{job.JID}}</div>
+    <div class="col-sm-10">{{job.Name}}</div>
   </div>
   <div class="row text-secondary mt-0">
     <div class="col-sm-12">
-      {{job.Command}}
     </div>
   </div>
   {% endfor %}
