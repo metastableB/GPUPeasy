@@ -4,40 +4,10 @@ import shlex
 import re
 from flask import Flask, flash, redirect, jsonify, url_for
 from flask import render_template, request, session, abort
+import requests
 
 from gpupeasy.core.server import GPUPeasyServer
 
-frontend = Flask(__name__)
-
-@frontend.route("/message")
-def messageTest():
-    msg = {'successMessage': 'This is a success message',
-           'errorMessage': 'This is an error message',
-           'infoMessage' : ' This is an info message'}
-    msg = json.dumps(msg)
-    return redirect(url_for('index', messages=msg))
-
-
-@frontend.route("/")
-def index():
-    if 'messages' not in request.args:
-        return render_template('index.html')
-    msg = json.loads(request.args['messages'])
-    return render_template('index.html', **msg)
-
-# @frontend.route("/deviceutilization")
-# def getDeviceUtilization():
-    # ret = backend.getRunningJobs()
-    # if len(ret) == 0:
-        # return 'Empty'
-    # jobs = []
-    # for job in ret:
-        # command = ' '.join(job.commandList)
-        # gpu = job.gpu
-        # jobD = {'JID': job.jobid, 'Name': job.name,
-                # 'Command': command, 'gpu': gpu}
-        # jobs.append(jobD)
-    # return render_template('deviceutilization.html', jobs=jobs)
 
 # @frontend.route("/scheduledjobs")
 # def getScheduledJobs():
@@ -188,5 +158,98 @@ def index():
     # sucMsg += 'Done'
     # return render_template('index.html', successMessage=sucMsg)
 
+class GPUSchedulerGUI:
+    def __init__(self, coreHost, corePort, debug=False):
+        self.__frontend = Flask(__name__)
+        self.__cHost = coreHost
+        self.__cPort = corePort
+        self.__debug = debug
+
+        fe = self.__frontend
+        fe.add_url_rule('/message', 'messageTest',
+                        self.__messageTest)
+        fe.add_url_rule('/', 'index', self.__index)
+        fe.add_url_rule('/deviceutilization', 'getDeviceUtilization',
+                        self.__getDeviceUtilization)
+
+    def __makeCoreRequest(self, url, method):
+        '''
+        Returns: Response, message
+            Response is None in the event of an error and an error message will
+            be provided as message.
+        '''
+        assert method in ['GET', 'PORT'], 'Invalid method: %s' % method
+        func = requests.post
+        if method == 'GET':
+            func = requests.get
+        try:
+            resp = func(url)
+        except requests.ConnectionError:
+            return None, 'Connection error on url: %s' % url
+        except requests.Timeout:
+            return None, 'Connection timeout on url: %s' % url
+        except requests.TooManyRedirects:
+            return None, 'Too many redirects on url: %s' % url
+        return resp, None
+
+    # URL end-points
+    def __messageTest(self):
+        msg = {'successMessage': 'This is a success message',
+               'errorMessage': 'This is an error message',
+               'infoMessage' : ' This is an info message'}
+        msg = json.dumps(msg)
+        return redirect(url_for('index', messages=msg))
+
+    def __index(self):
+        if 'messages' not in request.args:
+            return render_template('index.html')
+        msg = json.loads(request.args['messages'])
+        return render_template('index.html', **msg)
+
+    def __getDeviceUtilization(self):
+        '''
+        Returns template
+        '''
+        url = 'http://%s:%s/deviceutilization' % (self.__cHost, self.__cPort)
+        utilization, msg = self.__makeCoreRequest(url, method='GET')
+        if utilization is None:
+            return render_template('deviceutilization.html', errorMessage=msg)
+
+        url = 'http://%s:%s/availabledevices' % (self.__cHost, self.__cPort)
+        allDiv, msg = self.__makeCoreRequest(url, method='GET')
+        if allDiv is None:
+            return render_template('deviceutilization.html', errorMessage=msg)
+
+        utilization = utilization.json()
+        print(utilization)
+        allDiv = allDiv.json()
+        if utilization['status'] != 'successful':
+            msg = 'Could not fetch utilization info from core server'
+            return render_template('deviceutilization.html', errorMessage=msg)
+        if allDiv['status'] != 'successful':
+            msg = 'Could not fetch all devices info from core server'
+            return render_template('deviceutilization.html', errorMessage=msg)
+
+        ret = {}
+        for gpu in allDiv['value']:
+            ret[gpu] = {'name': gpu, 'idle': True, 'job': {}}
+
+        for job in utilization['value']:
+            gpu = job['gpu']
+            # GPU should be key
+            assert gpu in ret, 'Internal error. Invalid invariant'
+            # not two jobs should be scheduled on a GPU
+            assert ret[gpu]['idle'] == True, 'Internal error. Invalid invariant'
+            ret[gpu]['job'] = job
+            ret[gpu]['idle'] = False
+        return render_template('deviceutilization.html', devices=ret)
+
+    def run(self, host, port):
+        self.__frontend.run(debug=self.__debug, host=host, port=port)
+
+
+
+
 if __name__ == "__main__":
-    frontend.run(debug=True, host='0.0.0.0', port='4004')
+    frontend = GPUSchedulerGUI('localhost', '8888', debug=True)
+    frontend.run(host='0.0.0.0', port='4004')

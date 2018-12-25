@@ -3,14 +3,6 @@
   overflow-y: scroll;
 }
 
-h1 {
-  color: red;
-}
-
-h2 {
-  color: red;
-}
-
-h3 {
+.test-class {
   color: red;
 }

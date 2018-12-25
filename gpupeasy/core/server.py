@@ -41,6 +41,8 @@ class GPUPeasyServer:
         fe.add_url_rule('/failedjobs', 'getFailedJobs', self.__getFailedJobs)
         fe.add_url_rule('/addnewjob', 'addNewJob', self.__addNewJob,
                         methods=['POST'])
+        fe.add_url_rule('/availabledevices', 'getAvailableGPUList',
+                        self.__getAvailableGPUList)
 
     def __setupLogging(self, logdir, debug):
         if logdir is None:
@@ -77,9 +79,22 @@ class GPUPeasyServer:
         return True, None
 
     # URL Handlers
+    def __getAvailableGPUList(self):
+        '''
+        return json:
+            {
+             'status': 'successful' or 'failed'
+             'value' : a list of devices
+             }
+        '''
+        backend = self.__backend
+        ret = backend.getAvailableGPUList()
+        ret = {'status': 'successful', 'value': ret}
+        return jsonify(ret)
+
     def __getDeviceUtilization(self):
         '''
-        returns josn:
+        returns json:
             {'status': 'successful' or 'failed',
             'value': A list of dict each of the following structure:
                 {'jobid': jobid, 'jobName': jobname,
@@ -231,5 +246,5 @@ class GPUPeasyServer:
 
 
 if __name__ == '__main__':
-    gpu = GPUPeasyServer(['0'], debug=True)
+    gpu = GPUPeasyServer(['0', '1', '2'], debug=True)
     gpu.run(host='0.0.0.0', port='8888')

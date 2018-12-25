@@ -1,20 +1,46 @@
+{% if errorMessage is defined %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error:</strong> {{ errorMessage }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% else %}
 <div class="col-sm-12">
-  {% for job in jobs %}
+  {% for name, info in devices.items() %}
   <div class="row mt-1 border border-primary rounded">
     <div class="col-md-3">
-      Device: {{job.gpu}}
+      <strong>Device: {{name}}</strong>
     </div>
     <div class="col-md-9">
-      <div class="row bg-secondary text-white">
-        <div class="col-sm-6">{{job.JID}}</div>
-        <div class="col-sm-6">{{job.Name}}</div>
-      </div>
-      <div class="row text-secondary mt-0">
-        <div class="col-sm-12">
-          {{job.Command}}
+      {% if info.idle == true %}
+      <div class="row">
+        <div class="col-sm-12 bg-info text-white text-left">
+          Status: Idle
         </div>
       </div>
+      {% else %}
+      <div class="row">
+        <div class="col-sm-3 bg-primary text-white">
+          Status: Running
+        </div>
+        <div class="col-sm-9 bg-primary text-white">
+          Job ID: {{info.job.jobID}}</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 bg-primary text-white">
+          Job Name: {{info.job.jobName}}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 bg-secondary text-white">
+          Command: {{info.job.jobCommand}}
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
   {% endfor %}
 </div>
+{% endif %}
+

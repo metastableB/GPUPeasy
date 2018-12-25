@@ -54,6 +54,7 @@ class GPUSchedulerCore:
             self.__logger = Logger()
         self.__logger.pInfo("Scheduler core initializing")
         self.__availableGPU = LockedList()
+        assert len(availableGPU) >= 0, 'Available GPU list cannot be empty'
         for val in availableGPU:
             self.__availableGPU.append(val)
         assert len(availableGPU) > 0, "Available GPU list is empty"

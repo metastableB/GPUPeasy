@@ -5,18 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GPU-Easy</title>
-
-
+    
     <!-- Bootstrap  and jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"
     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
-
     <script
       src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
       integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
-      crossorigin="anonymous"></script>
-
+      crossorigin="anonymous">
+    </script>
     <script
     src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
     integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
@@ -32,16 +30,25 @@
     <!-- END BOOTSTRAP -->
 
     <!-- Custom CSS -->
-    <link ref="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css"
+     href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css"
+     href="{{ url_for('static', filename='css/externalstyle.css') }}">
+
     <!-- Custom javascript -->
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+
   </head>
+
+
   <body>
     <nav class="navbar navbar-light bg-light ml-auto">
       <div class="container">
         <a href="{{ url_for('index')}}" class="navbar-brand">GPUPeasy</a>
         <a href="{{ url_for('index') }}" class="btn btn-success ml-auto">Add Jobs</a>
         <a href="{{ url_for('messageTest') }}" class="btn btn-success">Message Test</a>
+        <a href="{{ url_for('getDeviceUtilization') }}" class="btn
+          btn-success">Device Utilization</a>
       </div>
     </nav>
 
