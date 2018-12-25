@@ -17,6 +17,7 @@ class Job:
         # This will be set once the process has started
         self.subprocess = None
         self.gpu = None
+        self.jobid = None
 
     def __str__(self):
         return '<' + str(self.jobid) + ', ' + self.name +'>'
@@ -267,6 +268,50 @@ class GPUSchedulerCore:
             time.sleep(0.05)
         self.__logger.pInfo('Daemon exited')
         return
+
+    def getJobInfo(self, jobID):
+        '''
+        I am conflicted between implementing an internal scheme that will keep
+        a track of the jobs and can allow for O(1) access and this search for
+        each call approach. The first one will put more load on the periodic
+        scans which I don't want to do. The second is expensive.
+
+        I could combine the two and have a lazy update, only performing queue
+        updates on job status on request and only after 10 seconds or so. But
+        this introduces usage of a clock which I don't want to do.
+
+        There is a slim chance that the job is not found due to the other
+        thread medling with the queues, but with a 10s granularity between
+        updates, this is unlikely.
+
+        TODO: Think more about this.
+        '''
+        # Check if a scheduled job
+        jobID = int(jobID)
+        jobs = self.getJobsToSchedule()
+        for job in jobs:
+            if job.jobid == jobID:
+                job.status = 'Schedule'
+                return job
+        # Else check if a failed job
+        jobs = self.getFailedJobs()
+        for job in jobs:
+            if job.jobid == jobID:
+                job.status = 'Failed'
+                return job
+        # Else check if a successful job
+        jobs = self.getSucceededJobs()
+        for job in jobs:
+            if job.jobid == jobID:
+                job.status = 'Succeeded'
+                return job
+        # else check if running job
+        jobs = self.getRunningJobs()
+        for job in jobs:
+            if job.jobid == jobID:
+                job.status = 'Running'
+                return job
+        return None
 
     def startDaemon(self):
         '''

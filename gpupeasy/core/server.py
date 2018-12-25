@@ -43,6 +43,7 @@ class GPUPeasyServer:
                         methods=['POST'])
         fe.add_url_rule('/availabledevices', 'getAvailableGPUList',
                         self.__getAvailableGPUList)
+        fe.add_url_rule('/jobinfo/<jobID>', 'getJobInfo', self.__getJobInfo)
 
     def __setupLogging(self, logdir, debug):
         if logdir is None:
@@ -180,6 +181,37 @@ class GPUPeasyServer:
             jobs.append(jobD)
         ret = {'status':'successful', 'value': jobs}
         return jsonify(ret)
+
+    def __getJobInfo(self, jobID):
+        '''
+        returns json:
+            {
+                'status': 'successful' or 'failed'
+                'value': {
+                    'jobid':jobid,
+                    'jobname':jobname',
+                    'jobCOmmand': 'jobCommand',
+                    'outFile' : outFiel,
+                    'status': current status
+
+                }
+            }
+        '''
+        ret = self.__backend.getJobInfo(jobID)
+        if ret is None:
+            msg = {'status': 'failed', 'value': {}}
+            return jsonify(msg)
+        job = ret
+        msg = {'status': 'successful',
+               'value': {
+                   'jobid': job.jobid,
+                   'jobName': job.name,
+                   'jobCommand': ' '.join(job.commandList),
+                   'outFile': job.stdout.name,
+                   'status': job.status,
+               }
+              }
+        return jsonify(msg)
 
     def __addNewJob(self):
         '''

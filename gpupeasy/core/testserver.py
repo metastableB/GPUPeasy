@@ -1,4 +1,5 @@
 import requests
+import time
 
 def testAddJobs(url, method='GET', prefix='http://localhost:8888'):
     url = prefix + url
@@ -47,6 +48,10 @@ def main():
         testURL(url, method='POST')
 
     testAddJobs('/addnewjob', method='POST')
+    time.sleep(5)
+    getURList = ['/jobinfo/1', '/jobinfo/2', '/jobinfo/3']
+    for url in getURList:
+        testURL(url)
 
 if __name__ =='__main__':
     main()

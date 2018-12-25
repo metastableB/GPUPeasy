@@ -93,6 +93,7 @@ class GPUSchedulerGUI:
                         self.__getDeviceUtilization)
         fe.add_url_rule('/batchaddjobs', 'batchAddJobs', self.__batchAddJobs,
                         methods=['GET', 'POST'])
+        fe.add_url_rule('/jobinfo/<jobID>', 'getJobInfo', self.__getJobInfo)
 
     def __makeCoreRequest(self, url, method, data=None):
         '''
@@ -161,10 +162,7 @@ class GPUSchedulerGUI:
         for key in msg:
             value = msg[key]
             value = value.strip()
-            print(value)
             value = value.replace('\n', '<br \>')
-            print(value)
-            print()
             msg[key] = value
         return render_template('index.html', **msg)
 
@@ -243,7 +241,6 @@ class GPUSchedulerGUI:
             return render_template('deviceutilization.html', errorMessage=msg)
 
         utilization = utilization.json()
-        print(utilization)
         allDiv = allDiv.json()
         if utilization['status'] != 'successful':
             msg = 'Could not fetch utilization info from core server'
@@ -265,6 +262,14 @@ class GPUSchedulerGUI:
             ret[gpu]['job'] = job
             ret[gpu]['idle'] = False
         return render_template('deviceutilization.html', devices=ret)
+
+    def __getJobInfo(self, jobID):
+        url = 'http://%s:%s/jobinfo/%d' % (self.__cHost, self.__cPort,
+                                           int(jobID))
+        jobInfo, msg = self.__makeCoreRequest(url, method='GET')
+        if jobInfo is None:
+            return 'None %s' %  msg
+        return jsonify(jobInfo.json())
 
     def run(self, host, port):
         self.__frontend.run(debug=self.__debug, host=host, port=port)
