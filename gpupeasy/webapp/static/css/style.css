@@ -6,3 +6,7 @@
 .test-class {
   color: red;
 }
+
+.allow-newlines {
+  white-space: pre-wrap;
+}

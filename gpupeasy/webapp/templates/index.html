@@ -4,7 +4,7 @@
 
 {% if errorMessage is defined %}
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-  <strong>Error:</strong> {{ errorMessage }}
+  <strong>Error:</strong> {{ errorMessage | safe }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -12,7 +12,7 @@
 {% endif %}
 {% if infoMessage is defined %}
 <div class="alert alert-info alert-dismissible fade show" role="alert">
-  <strong>Info:</strong> {{ infoMessage }}
+  <strong>Info:</strong> {{ infoMessage | safe }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -20,7 +20,7 @@
 {% endif %}
 {% if successMessage is defined %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
-  <strong>Success:</strong> {{ successMessage }}
+  <strong>Success:</strong> {{ successMessage | safe }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>

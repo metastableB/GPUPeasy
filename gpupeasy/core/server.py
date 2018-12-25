@@ -220,7 +220,7 @@ class GPUPeasyServer:
         try:
             fp = open(outFile, 'w+')
         except:
-            msg = 'Could not open output file for job: %s' % jobName
+            msg = 'Could not open output file: %s' % outFile
             failed['message'] = msg
             return jsonify(failed)
 
