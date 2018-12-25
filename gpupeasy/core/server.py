@@ -232,4 +232,4 @@ class GPUPeasyServer:
 
 if __name__ == '__main__':
     gpu = GPUPeasyServer(['0'], debug=True)
-    gpu.run(host='0.0.0.0', port='4004')
+    gpu.run(host='0.0.0.0', port='8888')
