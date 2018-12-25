@@ -6,8 +6,8 @@
     </button>
 </div>
 {% else %}
+{% for name, info in devices.items() %}
 <div class="col-sm-12">
-  {% for name, info in devices.items() %}
   <div class="row mt-1 border border-primary rounded">
     <div class="col-md-3">
       <strong>Device: {{name}}</strong>
@@ -16,13 +16,13 @@
       {% if info.idle == true %}
       <div class="row">
         <div class="col-sm-12 bg-info text-white text-left">
-          Status: Idle
+          status: idle
         </div>
       </div>
       {% else %}
       <div class="row">
         <div class="col-sm-3 bg-primary text-white">
-          Status: Running
+          Status: running
         </div>
         <div class="col-sm-9 bg-primary text-white">
           Job ID: {{info.job.jobID}}</div>
@@ -40,7 +40,7 @@
       {% endif %}
     </div>
   </div>
-  {% endfor %}
 </div>
+  {% endfor %}
 {% endif %}
 
