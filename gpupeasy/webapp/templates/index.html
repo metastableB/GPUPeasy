@@ -2,42 +2,45 @@
 
 {% block container %}
 
-{% if errMessage is defined %}
-<div class="row mt-1 hide-5 bg-danger text-white">
-  <div class="col-md-12">
-    Error: {{ errMessage }}
-  </div>
+{% if errorMessage is defined %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error:</strong> {{ errorMessage }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
 </div>
 {% endif %}
-
 {% if infoMessage is defined %}
-<div class="row mt-1 hide-5 bg-info text-white">
-  <div class="col-md-12">
-    Info: {{ infoMessage }}
-  </div>
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+  <strong>Info:</strong> {{ infoMessage }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
 </div>
 {% endif %}
-
 {% if successMessage is defined %}
-<div class="row mt-1 hide-5 bg-success text-white">
-  <div class="col-md-12">
-    Success: {{ successMessage }}
-  </div>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>Success:</strong> {{ successMessage }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
 </div>
 {% endif %}
 
-<div class="row mt-5">
-  <div class="col-md-12">
-    <div class="row col-md-12">
-      <h2>All Devices</h2>
-    </div>
-    <div class="row col-sm-12" id="AllDevices">
-      <div class="col-sm-12 ">
-        {{ allDevices }}
-      </div>
-    </div>
-  </div>
-</div>
+<!--<div class="row mt-5">-->
+  <!--<div class="col-md-12">-->
+    <!--<div class="row col-md-12">-->
+      <!--<h2>All Devices</h2>-->
+    <!--</div>-->
+    <!--<div class="row col-sm-12" id="AllDevices">-->
+      <!--<div class="col-sm-12 ">-->
+        <!--{{ allDevices }}-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
+<!--</div>-->
+Then fix Device utilization: List all devices together<br>
+Make sure jobs have a class which is clickable <br>
 
 <div class="row mt-5">
   <div class="col-md-12">
@@ -52,41 +55,41 @@
   </div>
 </div>
 
-<div class="row mt-5">
-  <div class="col-md-6">
-    <div class="row">
-      <div class="col-md-12 "><h2>Successful Jobs</h2></div>
-    </div>
-    <div class="row col-sm-12 h-50-scroll" id="SuccessfulJobs">
-      <div class="col-sm-12 ">
-        Loading . . .
-      </div>
-    </div>
-  </div>
+<!--<div class="row mt-5">-->
+  <!--<div class="col-md-6">-->
+    <!--<div class="row">-->
+      <!--<div class="col-md-12 "><h2>Successful Jobs</h2></div>-->
+    <!--</div>-->
+    <!--<div class="row col-sm-12 h-50-scroll" id="SuccessfulJobs">-->
+      <!--<div class="col-sm-12 ">-->
+        <!--Loading . . .-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
 
-  <div class="col-md-6">
-    <div class="row">
-      <div class="col-md-12 "><h2>Failed Jobs</h2></div>
-    </div>
-    <div class="row col-sm-12 h-50-scroll" id="FailedJobs">
-      <div class="col-sm-12 ">
-        Loading . . .
-      </div>
-    </div>
-  </div>
-</div>
+  <!--<div class="col-md-6">-->
+    <!--<div class="row">-->
+      <!--<div class="col-md-12 "><h2>Failed Jobs</h2></div>-->
+    <!--</div>-->
+    <!--<div class="row col-sm-12 h-50-scroll" id="FailedJobs">-->
+      <!--<div class="col-sm-12 ">-->
+        <!--Loading . . .-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
+<!--</div>-->
 
-<div class="row mt-3 height-50-scroll">
-  <div class="col-md-12">
-    <div class="row">
-      <div class="col-md-12 "><h2>Scheduled Jobs</h2></div>
-    </div>
-    <div class="row col-sm-12 h-50-scroll" id="ScheduledJobs">
-      <div class="col-sm-12 ">
-        Loading . . .
-      </div>
-    </div>
-  </div>
-</div>
+<!--<div class="row mt-3 height-50-scroll">-->
+  <!--<div class="col-md-12">-->
+    <!--<div class="row">-->
+      <!--<div class="col-md-12 "><h2>Scheduled Jobs</h2></div>-->
+    <!--</div>-->
+    <!--<div class="row col-sm-12 h-50-scroll" id="ScheduledJobs">-->
+      <!--<div class="col-sm-12 ">-->
+        <!--Loading . . .-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
+<!--</div>-->
 
 {% endblock %}

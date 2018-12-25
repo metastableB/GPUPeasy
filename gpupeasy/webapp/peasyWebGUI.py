@@ -1,17 +1,29 @@
 import os
+import json
 import shlex
 import re
-from flask import Flask, flash, redirect
+from flask import Flask, flash, redirect, jsonify, url_for
 from flask import render_template, request, session, abort
 
 from gpupeasy.core.server import GPUPeasyServer
 
 frontend = Flask(__name__)
 
+@frontend.route("/message")
+def messageTest():
+    msg = {'successMessage': 'This is a success message',
+           'errorMessage': 'This is an error message',
+           'infoMessage' : ' This is an info message'}
+    msg = json.dumps(msg)
+    return redirect(url_for('index', messages=msg))
+
+
 @frontend.route("/")
-@frontend.route("/home")
 def index():
-    return render_template('index.html')
+    if 'messages' not in request.args:
+        return render_template('index.html')
+    msg = json.loads(request.args['messages'])
+    return render_template('index.html', **msg)
 
 # @frontend.route("/deviceutilization")
 # def getDeviceUtilization():

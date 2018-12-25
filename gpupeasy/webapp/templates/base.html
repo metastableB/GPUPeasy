@@ -37,11 +37,11 @@
     <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
   </head>
   <body>
-    <nav class="navbar navbar-light bg-light justify-content-between">
+    <nav class="navbar navbar-light bg-light ml-auto">
       <div class="container">
         <a href="{{ url_for('index')}}" class="navbar-brand">GPUPeasy</a>
-        <a href="{{ url_for('addJobs') }}" class="btn btn-success">Add Job</a>
-        </form>
+        <a href="{{ url_for('index') }}" class="btn btn-success ml-auto">Add Jobs</a>
+        <a href="{{ url_for('messageTest') }}" class="btn btn-success">Message Test</a>
       </div>
     </nav>
 
