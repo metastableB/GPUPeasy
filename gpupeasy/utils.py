@@ -1,6 +1,8 @@
 import threading
+from datetime import datetime, timedelta
 
 class Logger:
+
     def __init__(self, fstdout=None, fstderr=None, debug=False):
         self.__stdout = fstdout
         self.__stderr = fstderr
@@ -9,25 +11,38 @@ class Logger:
     def setDebug(self, val):
         self.__debug = val
 
+    def __currentTimeString(self, zone='IST'):
+        assert zone in ['IST']
+        td = timedelta(hours=5, minutes=30)
+        ct = datetime.now() + td
+        cts = format(ct, '%d/%b/%Y %H:%M:%S')
+        return cts
+
     def pInfo(self, *args):
-        print('[Info    ]: ', *args, file=self.__stdout, flush=True)
+        ct = self.__currentTimeString()
+        print('[%s] [Info    ]: ' % ct, *args, file=self.__stdout, flush=True)
 
     def pError(self, *args):
-        print('[Error   ]: ', *args, file=self.__stderr, flush=True)
+        ct = self.__currentTimeString()
+        print('[%s] [Error   ]: ' % ct, *args, file=self.__stderr, flush=True)
 
     def pCritical(self, *args):
-        print('[Critical]: ', *args, file=self.__stderr, flush=True)
+        ct = self.__currentTimeString()
+        print('[%s] [Critical]: ' % ct, *args, file=self.__stderr, flush=True)
 
     def pWarn(self, *args):
-        print('[Warning ]: ', *args, file=self.__stdout, flush=True)
+        ct = self.__currentTimeString()
+        print('[%s] [Warning ]: ' % ct, *args, file=self.__stdout, flush=True)
 
     def pSuccess(self, *args):
-        print('[Success ]: ', *args, file=self.__stdout, flush=True)
+        ct = self.__currentTimeString()
+        print('[%s] [Success ]: ' % ct, *args, file=self.__stdout, flush=True)
 
     def pDebug(self, *args):
         if not self.__debug:
             return
-        print('[Debug   ]: ', *args, file=self.__stdout, flush=True)
+        ct = self.__currentTimeString()
+        print('[%s] [Debug   ]: ' % ct, *args, file=self.__stdout, flush=True)
 
 
 class LockedList:

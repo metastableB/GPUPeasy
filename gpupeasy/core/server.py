@@ -7,7 +7,7 @@ from gpupeasy.core.gpuscheduler import GPUSchedulerCore, Job
 from gpupeasy.utils import Logger
 
 class GPUPeasyServer:
-    def __init__(self, gpuList, logdir=None, debug=False, wakesec=3):
+    def __init__(self, gpuList, logdir=None, debug=False, wakesec=5):
         '''
         The GPUPeasyServer.
         This server initializes the gpupeasy core scheduler and awaits
@@ -51,7 +51,7 @@ class GPUPeasyServer:
         if not os.path.exists(logdir):
             # Will fail with exception if something goes wrong. I don't have to
             # handle this as this is a critical error.
-            os.mkdirs(logdir)
+            os.makedirs(logdir)
         # Again, will fail with exception.
         logfile = logdir + '/logs.out'
         logfile = open(logfile, 'a+')
@@ -275,6 +275,7 @@ class GPUPeasyServer:
         # if user_reloader is set to true, then flask will call initializer
         # twice. This means that two instances of GPUSchedulerCore will be
         # started. (You only run and interact with one though).
+        self.__logger.pDebug('Starting GPUPeasy server on %s:%s' %(host, port))
         self.__frontend.run(debug=self.__debug, host=host, port=port,
                             use_reloader=False)
 
