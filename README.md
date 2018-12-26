@@ -25,3 +25,4 @@ which GPU to use.
   queues. Replace the current list queue with priority queue that reduces to a
   regular queue with when priority = 30 or something.
 - [ ] Implement a screen where you can view jobinfo and logs.
+- [ ] Need to fix names and conventions throughout. 
