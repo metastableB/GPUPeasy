@@ -15,9 +15,11 @@ class Job:
         self.stdout = stdout
         self.stderr = stderr
         # This will be set once the process has started
+        # or finished
         self.subprocess = None
         self.gpu = None
         self.jobid = None
+        self.returncode = None
 
     def __str__(self):
         return '<' + str(self.jobid) + ', ' + self.name +'>'
@@ -93,9 +95,12 @@ class GPUSchedulerCore:
         runningJobs = self.__runningJobs.getCurrVals()
         for i in range(len(runningJobs)):
             job = runningJobs[i]
+            assert job.subprocess is not None, 'No subprocess for running jobs?'
+            assert job.returncode is None, 'Return code for running jobs?'
             if job.subprocess.poll() is None:
                 continue
             rt = job.subprocess.returncode
+            job.returncode = rt
             if rt != 0:
                 self.__logger.pWarn("Process", job,
                                     "exited with return code: %d" % rt)
@@ -137,6 +142,7 @@ class GPUSchedulerCore:
         assert len(self.__currAvailableGPUs) > 0, self.__logger.pCritial(msg)
         gpu = self.__currAvailableGPUs.pop()
         job = self.__toScheduleJobs.pop()
+        assert job.jobid is not None, 'No jobID for in-queue job?'
         assert job.subprocess == None, self.__logger.pCritial(msg)
         self.__logger.pInfo("Scheduling", job, "on gpu ", gpu)
         # Handling subprocesses
@@ -160,6 +166,8 @@ class GPUSchedulerCore:
         except ValueError as e:
             self.__logger.pError("Scheduling failed for", job, "on gpu", gpu)
             self.__logger.pError("ValueError:", str(e))
+        # Document this somewhere. TODO:
+        job.returncode = -1
         self.__failedJobs.append(job)
         self.__currAvailableGPUs.push(gpu)
 
@@ -247,18 +255,28 @@ class GPUSchedulerCore:
 
     def getJobsToSchedule(self):
         val = self.__toScheduleJobs.getCurrVals()
+        for job in val:
+            assert job.jobid is not None
         return val
 
     def getRunningJobs(self):
         val = self.__runningJobs.getCurrVals()
+        for job in val:
+            assert job.jobid is not None
         return val
 
     def getSucceededJobs(self):
         val = self.__succeededJobs.getCurrVals()
+        for job in val:
+            assert job.jobid is not None
+            assert job.returncode is not None
         return val
 
     def getFailedJobs(self):
         val = self.__failedJobs.getCurrVals()
+        for job in val:
+            assert job.jobid is not None
+            assert job.returncode is not None
         return val
 
     def stopDaemon(self):
@@ -291,7 +309,7 @@ class GPUSchedulerCore:
         jobs = self.getJobsToSchedule()
         for job in jobs:
             if job.jobid == jobID:
-                job.status = 'Schedule'
+                job.status = 'Scheduled'
                 return job
         # Else check if a failed job
         jobs = self.getFailedJobs()

@@ -1,6 +1,6 @@
 .h-50-scroll {
-  max-height: 20%;
-  overflow-y: scroll;
+  max-height: 10em;
+  overflow-y: auto;
 }
 
 .test-class {

@@ -133,6 +133,7 @@ class GPUPeasyServer:
             command = ' '.join(job.commandList)
             jobD = {'jobID': job.jobid, 'jobName': job.name,
                     'jobCommand': command}
+            jobs.append(jobD)
         ret = {'status':'successful', 'value': jobs}
         return jsonify(ret)
 
@@ -154,7 +155,7 @@ class GPUPeasyServer:
         for job in ret:
             command = ' '.join(job.commandList)
             jobD = {'jobID': job.jobid, 'jobName': job.name,
-                    'jobCommand': command}
+                    'jobCommand': command, 'returnCode': job.returncode}
             jobs.append(jobD)
         ret = {'status':'successful', 'value': jobs}
         return jsonify(ret)
@@ -177,7 +178,7 @@ class GPUPeasyServer:
         for job in ret:
             command = ' '.join(job.commandList)
             jobD = {'jobID': job.jobid, 'jobName': job.name,
-                    'jobCommand': command}
+                    'jobCommand': command, 'returnCode': job.returncode}
             jobs.append(jobD)
         ret = {'status':'successful', 'value': jobs}
         return jsonify(ret)
@@ -209,6 +210,7 @@ class GPUPeasyServer:
                    'jobCommand': ' '.join(job.commandList),
                    'outFile': job.stdout.name,
                    'status': job.status,
+                   'returnCode' : job.returncode,
                }
               }
         return jsonify(msg)

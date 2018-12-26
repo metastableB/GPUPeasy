@@ -7,6 +7,10 @@ def testAddJobs(url, method='GET', prefix='http://localhost:8888'):
     jobs = [
         {'job':{'jobName': 'ls0', 'outFile': '/tmp/ls/00',
                    'jobCommand':['sleep','200']}},
+        {'job':{'jobName': 'fail00', 'outFile': '/tmp/ls/20',
+                   'jobCommand':['seep','1200']}},
+        {'job':{'jobName': 'fail01', 'outFile': '/tmp/ls/21',
+                   'jobCommand':['seep','1200']}},
         {'job':{'jobName': 'ls1', 'outFile': '/tmp/ls/01',
                    'jobCommand':['sleep','1200']}},
         {'job':{'jobName': 'ls2', 'outFile': '/tmp/ls/02',
@@ -43,9 +47,13 @@ def main():
                  '/successfuljobs', '/failedjobs', '/availabledevices']
     postURLList = ['/addnewjob']
     for url in getURList:
+        print('URL:', url)
         testURL(url)
+        print()
     for url in postURLList:
+        print('URL:', url)
         testURL(url, method='POST')
+        print()
 
     testAddJobs('/addnewjob', method='POST')
     time.sleep(5)

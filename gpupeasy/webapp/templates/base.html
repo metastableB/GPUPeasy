@@ -42,12 +42,28 @@
 
 
   <body>
-    <nav class="navbar navbar-light bg-light ml-auto">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container">
-        <a href="{{ url_for('index')}}" class="navbar-brand">GPUPeasy</a>
-        <a href="{{ url_for('batchAddJobs') }}" class="btn btn-success ml-auto">Add Jobs</a>
-        <a href="{{ url_for('messageTest') }}" class="btn btn-success
-          ml-auto">Message</a>
+        <a class="navbar-brand" href="{{ url_for('index') }}">GPUPeasy</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+          data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false"
+          aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a href="{{ url_for('messageTest') }}"
+                class="btn btn-success ml-auto">Message</a>
+            </li>
+            <li class="nav-item ml-1">
+              <a href="{{ url_for('batchAddJobs') }}"
+                class="btn btn-success ml-auto">Add Jobs</a>
+            </li>
+          </ul>
+        </div>
       </div>
     </nav>
 

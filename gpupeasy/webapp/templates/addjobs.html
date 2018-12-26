@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block container %}
-<div class="row mt-5">
-  <h1>Batch Add Jobs</h1>
-</div>
 
-<div class="row mt-5">
+<div class="row mt-3">
+  <h3>Batch Add Jobs</h3>
+</div>
+<div class="row mt-1">
   <div class="col-sm-12">
     Add jobs here. I use pythons shlex for lexical analysis of the commands
     entered here so non POSIX shells might not behave as expected.
@@ -24,7 +24,7 @@
   </div>
 </div>
 
-<div class="row mt-5">
+<div class="row mt-3">
   <div class="col-sm-12">
     <form action="{{ url_for('batchAddJobs') }}" method="post">
       <div class="form-group">
@@ -35,5 +35,43 @@
     </form>
   </div>
 </div>
+
+<div class="row mt-5">
+  <h3>Test Job Command</h3>
+</div>
+
+<div class="row mt-1">
+  <div class="col-sm-12">
+    The job command string is passed to a not so great parser based on
+    <code>shlex</code> which extracts commands and arguments. This is then
+    directly passed onto the <code>subprocess</code> module. The below form can
+    be used to return the lexer output.
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm-12">
+    <form action="{{ url_for('testCommandParser') }}" method="post">
+      <div class="form-group">
+        <label for="Job Command">Job Command</label>
+        <textarea name='jobCommand' class="form-control" rows="3"></textarea>
+      </div>
+      <input class="btn btn-primary" type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+{% if commandList is defined %}
+<div class="mt-1 alert alert-info alert-dismissible fade show" role="alert">
+  {% if errorMessage is defined %}
+    {{ errorMessage }}<br>
+  {% else %}
+    <strong>Command List:</strong> {{ commandList }}
+  {% endif %}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endif %}
+
 
 {% endblock %}

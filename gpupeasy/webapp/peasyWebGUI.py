@@ -45,45 +45,19 @@ from gpupeasy.core.server import GPUPeasyServer
         # jobs.append(jobD)
     # return render_template('queue.html', jobs=jobs)
 
-
-# @frontend.route("/addjobs", methods=['GET', 'POST'])
-# def addJobs():
-    # if request.method == 'GET':
-        # return render_template('addjobs.html')
-    # jobCommand = request.form['jobCommand']
-    # jobCommand = jobCommand.strip().replace('\n', ' ').replace('\r', ' ')
-    # jobName = request.form['jobName'].strip().replace('\n', ' ')
-    # jobName = jobName.replace('\r', ' ')
-    # jobOutF = request.form['outputFile'].strip().replace('\n', ' ')
-    # jobOutF = jobOutF.replace('\r', ' ')
-    # # TODO: This should be handled in javascript
-    # ret, msg = validateJob(jobName, jobOutF, jobCommand)
-    # if ret is False:
-        # return render_template('index.html', errMessage=msg)
-
-    # try:
-        # fp = open(jobOutF, 'w+')
-    # except:
-        # message = 'Could not open output file'
-        # return False, message
-
-    # jobCommand = shlex.split(jobCommand)
-    # job = Job(jobName, jobCommand, stdout=fp, stderr=fp)
-    # ret = backend.addNewJob(job)
-    # if ret is False:
-        # message = 'Could not add job. Check logs for details'
-        # return render_template('index.html', errMessage=message)
-    # return render_template('index.html', successMessage='Added 1 job.')
-
-
-# @frontend.route("/batchaddjobs", methods=['GET', 'POST'])
-
 class GPUSchedulerGUI:
     def __init__(self, coreHost, corePort, debug=False):
         self.__frontend = Flask(__name__)
         self.__cHost = coreHost
         self.__cPort = corePort
         self.__debug = debug
+
+        # Used to sync with backend for lazy updates.
+        # That is, data is sent to the web-gui iff the internal statelist
+        # and backends list differs, indicating and update.
+        self.__successList = []
+        self.__failedList = []
+        self.__scheduledList = []
 
         fe = self.__frontend
         fe.add_url_rule('/message', 'messageTest',
@@ -94,6 +68,14 @@ class GPUSchedulerGUI:
         fe.add_url_rule('/batchaddjobs', 'batchAddJobs', self.__batchAddJobs,
                         methods=['GET', 'POST'])
         fe.add_url_rule('/jobinfo/<jobID>', 'getJobInfo', self.__getJobInfo)
+        fe.add_url_rule('/testCommandParser', 'testCommandParser',
+                        self.__testCommandParser, methods=['POST'])
+        fe.add_url_rule('/successfuljobs', 'getSuccessfulJobs',
+                        self.__getSuccessfulJobs)
+        fe.add_url_rule('/failedjobs', 'getFailedJobs',
+                        self.__getFailedJobs)
+        fe.add_url_rule('/scheduledjobs', 'getScheduledJobs',
+                        self.__getScheduledJobs)
 
     def __makeCoreRequest(self, url, method, data=None):
         '''
@@ -147,6 +129,17 @@ class GPUSchedulerGUI:
         url = 'http://%s:%s/addnewjob' % (self.__cHost, self.__cPort)
         return self.__makeCoreRequest(url, method='POST', data=js)
 
+    def __cleanJobListString(self, string):
+        jobList = string.strip()
+        jobList = jobList.replace('\n', ' ').replace('\r', ' ')
+        jobList = re.sub(' +', ' ', jobList)
+        return jobList
+
+    def __parseCommand(self, commandString):
+        jobCommand = shlex.split(commandString)
+        jobCommand = [x.strip() for x in jobCommand]
+        return jobCommand
+
     # URL end-points
     def __messageTest(self):
         msg = {'successMessage': 'This is a success message',
@@ -166,13 +159,36 @@ class GPUSchedulerGUI:
             msg[key] = value
         return render_template('index.html', **msg)
 
+    def __testCommandParser(self):
+        jobCommand = request.form['jobCommand']
+        if len(jobCommand) == 0:
+            ret = {
+                'status': 'failed', 'commandList': [],
+                'errorMessage': 'Command string cannot be emtpy'
+            }
+            ret = json.dumps(ret)
+            return redirect(url_for('batchAddJobs', messages=ret))
+
+        jobCommand = self.__cleanJobListString(jobCommand)
+        ret = self.__parseCommand(jobCommand)
+        ret = [x.strip() for x in ret]
+        ret = {
+            'status': 'successful',
+            'commandList': ret,
+        }
+        ret = json.dumps(ret)
+        return redirect(url_for('batchAddJobs', messages=ret))
+
     def __batchAddJobs(self):
         if request.method == 'GET':
-            return render_template('addjobs.html')
+            if 'messages' not in request.args:
+                return render_template('addjobs.html')
 
-        jobList = request.form['jobList'].strip()
-        jobList = jobList.replace('\n', ' ').replace('\r', ' ')
-        jobList = re.sub(' +', ' ', jobList)
+            msg = json.loads(request.args['messages'])
+            return render_template('addjobs.html', **msg)
+
+        jobList = request.form['jobList']
+        jobList = self.__cleanJobListString(jobList)
         jobList = jobList.split(';;;')
         jobList = [x.strip() for x in jobList]
         jobList = [x for x in jobList if len(x) > 0]
@@ -201,15 +217,13 @@ class GPUSchedulerGUI:
             retmsg = 'There were %d errors. \n\n%s' % (countError, retmsg)
             msg = {'errorMessage': retmsg}
             return redirect(url_for('index', messages=json.dumps(msg)))
-        sucMsg = 'Jobs successfully passed onto scheduler\n.'
+        sucMsg = 'Jobs successfully passed onto scheduler.\n'
         for job in jobList:
             jobS = job.split(';;')
             jobS = [x.strip() for x in jobS]
             jobS = [x for x in jobS if len(x) > 0]
             jobName, jobOutF, jobCommand = jobS[0], jobS[1], jobS[2]
-            jobCommand = shlex.split(jobCommand)
-            jobCommand = [x.strip() for x in jobCommand]
-
+            jobCommand = self.__parseCommand(jobCommand)
             resp, msg = self.__addJob(jobName, jobOutF, jobCommand)
             if resp is None:
                 message = 'Could not add job: %s. Scheduler' % jobName
@@ -270,6 +284,66 @@ class GPUSchedulerGUI:
         if jobInfo is None:
             return 'None %s' %  msg
         return jsonify(jobInfo.json())
+
+    def __getSuccessfulJobs(self):
+        '''
+        TODO:
+        Maintain an internal list. Fetch from backend. Only send data if the
+        internal state differs from backend
+        '''
+        url = 'http://%s:%s/successfuljobs' % (self.__cHost, self.__cPort)
+        successfulJobs, msg = self.__makeCoreRequest(url, method='GET')
+        if successfulJobs is None:
+            return render_template('queue.html', errorMessage=msg)
+        ret = successfulJobs.json()
+        if ret['status'] != 'successful':
+            msg = 'Error: GPUPeasy scheduler server returned an error'
+            return render_template('queue.html', errorMessage=msg)
+        ret = ret['value']
+        if len(ret) == 0:
+            emptyMessage="No successful jobs"
+            return render_template('queue.html', emptyMessage=emptyMessage)
+        return render_template('queue.html', jobs=ret)
+
+    def __getFailedJobs(self):
+        '''
+        TODO:
+        Maintain an internal list. Fetch from backend. Only send data if the
+        internal state differs from backend
+        '''
+        url = 'http://%s:%s/failedjobs' % (self.__cHost, self.__cPort)
+        failedJobs, msg = self.__makeCoreRequest(url, method='GET')
+        if failedJobs is None:
+            return render_template('queue.html', errorMessage=msg)
+        ret = failedJobs.json()
+        if ret['status'] != 'successful':
+            msg = 'Error: GPUPeasy scheduler server returned an error'
+            return render_template('queue.html', errorMessage=msg)
+        ret = ret['value']
+        if len(ret) == 0:
+            emptyMessage="No jobs have failed"
+            return render_template('queue.html', emptyMessage=emptyMessage)
+        return render_template('queue.html', jobs=ret)
+
+    def __getScheduledJobs(self):
+        '''
+        TODO:
+        Maintain an internal list. Fetch from backend. Only send data if the
+        internal state differs from backend
+        '''
+        url = 'http://%s:%s/scheduledjobs' % (self.__cHost, self.__cPort)
+        scheduledjobs, msg = self.__makeCoreRequest(url, method='GET')
+        if scheduledjobs is None:
+            return render_template('queue.html', errorMessage=msg)
+        ret = scheduledjobs.json()
+        if ret['status'] != 'successful':
+            msg = 'Error: GPUPeasy scheduler server returned an error'
+            return render_template('queue.html', errorMessage=msg)
+        ret = ret['value']
+        if len(ret) == 0:
+            emptyMessage="No jobs scheduled"
+            return render_template('queue.html', emptyMessage=emptyMessage)
+        return render_template('queue.html', jobs=ret)
 
     def run(self, host, port):
         self.__frontend.run(debug=self.__debug, host=host, port=port)
