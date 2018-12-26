@@ -45,7 +45,7 @@ from gpupeasy.core.server import GPUPeasyServer
         # jobs.append(jobD)
     # return render_template('queue.html', jobs=jobs)
 
-class GPUSchedulerGUI:
+class GPUPeasyWebGUI:
     def __init__(self, coreHost, corePort, debug=False):
         self.__frontend = Flask(__name__)
         self.__cHost = coreHost
@@ -352,5 +352,5 @@ class GPUSchedulerGUI:
 
 
 if __name__ == "__main__":
-    frontend = GPUSchedulerGUI('localhost', '8888', debug=True)
+    frontend = GPUPeasyWebGUIchedulerGUi('localhost', '8888', debug=True)
     frontend.run(host='0.0.0.0', port='4004')
