@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block container %}
+
+{% if errorMessage is defined %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error:</strong> {{ errorMessage | safe }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endif %}
+{% if infoMessage is defined %}
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+  <strong>Info:</strong> {{ infoMessage | safe }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endif %}
+{% if successMessage is defined %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>Success:</strong> {{ successMessage | safe }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endif %}
+
+<div class="row mt-5">
+  <div class="col-md-12">
+    <div class="row col-md-12">
+      <h2>Job Info</h2>
+    </div>
+    <div class="row mt-5 text-left">
+      <div class="col-md-3"><strong>Job ID</strong></div>
+      <div class="col-md-9">{{jobid}}</div>
+    </div>
+    <div class="row mt-1 text-left">
+      <div class="col-md-3"><strong>Job Name</strong></div>
+      <div class="col-md-9">{{jobName}}</div>
+    </div>
+    <div class="row mt-1 text-left">
+      <div class="col-md-3"><strong>Status</strong></div>
+      <div class="col-md-9">{{status}}</div>
+    </div>
+    <div class="row mt-1 text-left">
+      <div class="col-md-3"><strong>Return Code</strong></div>
+      <div class="col-md-9">{{returnCode}}</div>
+    </div>
+    <div class="row mt-3 text-left border border-dark">
+      <div class="col-md-12"><strong>Job Command</strong></div>
+      <div class="col-md-12">{{jobCommand}}</div>
+    </div>
+    <div class="row mt-1 text-left border border-dark">
+      <div class="col-md-12"><strong>Output File</strong></div>
+      <div class="col-md-12">{{outFile}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm-12">
+    <form id='loadLogFileForm00'>
+      <div class="form-group">
+        <label for="fileName">Job List:</label>
+        <input type="text" name='fileName' class="form-control"
+                                           readonly value={{outFile}}>
+      </div>
+      <div class="form-group">
+        <label for="lastN">Last N lines:</label>
+        <input type="text" name='lastN' class="form-control" value=20>
+      </div>
+      <input class="btn btn-primary"  value="Load"
+                                      onclick="loadLogLines('loadLogFileForm00',
+                                      'logTextArea00')">
+    </form>
+  </div>
+  <div class="col-sm-12 form-group mt-3 border border-info">
+    <code style="white-space:pre;" id='logTextArea00'>#Press Load to load log file</code>
+  </div>
+</div>
+
+{% endblock %}

@@ -5,45 +5,10 @@ import re
 from flask import Flask, flash, redirect, jsonify, url_for
 from flask import render_template, request, session, abort
 import requests
+import subprocess
 
 from gpupeasy.core.server import GPUPeasyServer
 
-
-# @frontend.route("/scheduledjobs")
-# def getScheduledJobs():
-    # ret = backend.getJobsToSchedule()
-    # if len(ret) == 0:
-        # return 'Empty'
-    # jobs = []
-    # for job in ret:
-        # command = ' '.join(job.commandList)
-        # jobD = {'JID': job.jobid, 'Name': job.name, 'Command': command}
-        # jobs.append(jobD)
-    # return render_template('queue.html', jobs=jobs)
-
-# @frontend.route("/successfuljobs")
-# def getSuccessfulJobs():
-    # ret = backend.getSucceededJobs()
-    # if len(ret) == 0:
-        # return 'Empty'
-    # jobs = []
-    # for job in ret:
-        # command = ' '.join(job.commandList)
-        # jobD = {'JID': job.jobid, 'Name': job.name, 'Command': command}
-        # jobs.append(jobD)
-    # return render_template('queue.html', jobs=jobs)
-
-# @frontend.route("/failedjobs")
-# def getFailedJobs():
-    # ret = backend.getFailedJobs()
-    # if len(ret) == 0:
-        # return 'Empty'
-    # jobs = []
-    # for job in ret:
-        # command = ' '.join(job.commandList)
-        # jobD = {'JID': job.jobid, 'Name': job.name, 'Command': command}
-        # jobs.append(jobD)
-    # return render_template('queue.html', jobs=jobs)
 
 class GPUPeasyWebGUI:
     def __init__(self, coreHost, corePort, debug=False):
@@ -76,6 +41,8 @@ class GPUPeasyWebGUI:
                         self.__getFailedJobs)
         fe.add_url_rule('/scheduledjobs', 'getScheduledJobs',
                         self.__getScheduledJobs)
+        fe.add_url_rule('/loadlogfile', 'loadLogFile',
+                        self.__loadLogFile, methods=['POST'])
 
     def __makeCoreRequest(self, url, method, data=None):
         '''
@@ -282,8 +249,42 @@ class GPUPeasyWebGUI:
                                            int(jobID))
         jobInfo, msg = self.__makeCoreRequest(url, method='GET')
         if jobInfo is None:
-            return 'None %s' %  msg
-        return jsonify(jobInfo.json())
+            msg = 'None %s' %  msg
+            return render_template('jobinfo.html', errorMessage=msg)
+        js = jobInfo.json()
+        if js['status'] != 'successful':
+            msg = 'Job (%s) not found in backend (TODO CHANGE THIS)' % jobID
+            return render_template('jobinfo.html', errorMessage=msg)
+        jobInfo = js['value']
+        return render_template('jobinfo.html', **jobInfo)
+
+    def __loadLogFile(self):
+        '''
+        Only accepts POST
+        filename, last N. N can be negative to read from start.
+        '''
+        filename = request.form['fileName']
+        N = request.form['lastN']
+        N = int(N)
+        ret = {'status': 'failed', 'value': ''}
+        if not os.path.exists(filename):
+            msg = 'File not found: %s' % filename
+            ret['value'] = msg
+            return jsonify(msg)
+        f = subprocess.Popen(['tail','-n', '%d' % N, filename],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        f.wait()
+        if f.returncode != 0:
+            msg = 'Could not read file: %s\n' % (filename)
+            msg += 'tail returned error code %d' % (f.returncode)
+            ret['value'] = msg
+            return jsonify(ret)
+        lines = f.stdout.readlines()
+        lines = [x.decode('utf-8') for x in lines]
+        lines = ''.join(lines)
+        ret['status'] = 'successful'
+        ret['value'] = lines
+        return jsonify(ret)
 
     def __getSuccessfulJobs(self):
         '''

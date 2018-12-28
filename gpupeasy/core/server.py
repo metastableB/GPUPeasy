@@ -200,7 +200,9 @@ class GPUPeasyServer:
         '''
         ret = self.__backend.getJobInfo(jobID)
         if ret is None:
-            msg = {'status': 'failed', 'value': {}}
+            msg = {'status': 'failed', 'value': {},
+                   'message': 'Job (jobid :%d) jot found' % jobID,
+                  }
             return jsonify(msg)
         job = ret
         msg = {'status': 'successful',
@@ -211,7 +213,8 @@ class GPUPeasyServer:
                    'outFile': job.stdout.name,
                    'status': job.status,
                    'returnCode' : job.returncode,
-               }
+               },
+               'message': {},
               }
         return jsonify(msg)
 
