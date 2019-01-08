@@ -11,3 +11,6 @@
   white-space: pre-wrap;
 }
 
+.overflow-auto {
+  overflow: auto;
+}

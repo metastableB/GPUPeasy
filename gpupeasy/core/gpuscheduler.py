@@ -7,19 +7,28 @@ from gpupeasy.utils import Logger, LockedList
 
 
 class Job:
-    def __init__(self, jobname, commandList, stdin=None, stdout=None,
-                 stderr=None):
+    def __init__(self, jobname, commandList, stdoutF=None, stderrF=None):
         self.name = jobname
         self.commandList = commandList
-        self.stdin = stdin
-        self.stdout = stdout
-        self.stderr = stderr
+        # File names
+        self.stdoutF = stdoutF
+        self.stderrF = stderrF
         # This will be set once the process has started
         # or finished
         self.subprocess = None
         self.gpu = None
         self.jobid = None
         self.returncode = None
+
+    def openFiles(self):
+        if self.stdoutF is not None:
+            self.stdout = open(self.stdoutF, 'w+')
+        if self.stderrF is not None:
+            self.stderr = open(self.stderrF, 'w+')
+
+    def closeFiles(self):
+        self.stdout.close()
+        self.stderr.close()
 
     def __str__(self):
         return '<' + str(self.jobid) + ', ' + self.name +'>'
@@ -29,7 +38,7 @@ class Job:
 
 
 class GPUSchedulerCore:
-    def __init__(self, availableGPU, wakesec=10, maxQueueSize=1000,
+    def __init__(self, availableGPU, wakesec=10, maxQueueSize=10000,
                  logger=None):
         '''
         The GPU Scheduler core.
@@ -112,6 +121,7 @@ class GPUSchedulerCore:
                 self.__succeededJobs.append(job)
             idList.append(job.jobid)
             gpu = job.gpu
+            job.closeFiles()
             self.__currAvailableGPUs.push(gpu)
             self.__logger.pDebug("Current available gpus",
                                  self.getCurrAvailableGPUs())
@@ -142,6 +152,8 @@ class GPUSchedulerCore:
         assert len(self.__currAvailableGPUs) > 0, self.__logger.pCritial(msg)
         gpu = self.__currAvailableGPUs.pop()
         job = self.__toScheduleJobs.pop()
+        # Open stdout and stderr
+        job.openFiles()
         assert job.jobid is not None, 'No jobID for in-queue job?'
         assert job.subprocess == None, self.__logger.pCritial(msg)
         self.__logger.pInfo("Scheduling", job, "on gpu ", gpu)
@@ -153,7 +165,7 @@ class GPUSchedulerCore:
         try:
             env = os.environ.copy()
             env["CUDA_VISIBLE_DEVICES"] = gpu
-            subpro = subprocess.Popen(job.commandList, stdin=job.stdin,
+            subpro = subprocess.Popen(job.commandList, stdin=None,
                                       stdout=job.stdout, stderr=job.stderr,
                                       env=env)
             job.subprocess = subpro
@@ -168,6 +180,7 @@ class GPUSchedulerCore:
             self.__logger.pError("ValueError:", str(e))
         # Document this somewhere. TODO:
         job.returncode = -1
+        job.closeFiles()
         self.__failedJobs.append(job)
         self.__currAvailableGPUs.push(gpu)
 

@@ -49,8 +49,14 @@ their outputs (`outfile`) and a shell command (`python -u blah.py`, `ls -l`).
 Each job execution will consume one gpu till it is finished and dump its
 `stdout` and `stderr` to `outfile`. 
 
+## Bug Reports
+- [ ] Since the scheduler opens the output file before scheduling a job, all
+  scheduled processes have a open file descriptor. This is bad, as these then
+  are never closed and they overshoot the system open file descriptor limit.
 
 ## Features to Add
+- [ ] Kill a job
+- [ ] Pause scheduler (very useful when all the scheduled jobs have an error)
 - [ ] Redo the schedule-job process such that it is amenable to network
   scheduling in the future.
 - [ ] Support for changing devices. Adding/Subtracting GPU without killing the

@@ -201,7 +201,7 @@ class GPUPeasyServer:
         ret = self.__backend.getJobInfo(jobID)
         if ret is None:
             msg = {'status': 'failed', 'value': {},
-                   'message': 'Job (jobid :%d) jot found' % jobID,
+                   'message': 'Job (jobid :%s) jot found' % jobID,
                   }
             return jsonify(msg)
         job = ret
@@ -210,7 +210,7 @@ class GPUPeasyServer:
                    'jobid': job.jobid,
                    'jobName': job.name,
                    'jobCommand': ' '.join(job.commandList),
-                   'outFile': job.stdout.name,
+                   'outFile': job.stdoutF,
                    'status': job.status,
                    'returnCode' : job.returncode,
                },
@@ -260,8 +260,9 @@ class GPUPeasyServer:
             msg = 'Could not open output file: %s' % outFile
             failed['message'] = msg
             return jsonify(failed)
+        fp.close()
 
-        job = Job(jobName, jobCommand, stdout=fp, stderr=fp)
+        job = Job(jobName, jobCommand, stdoutF=outFile, stderrF=outFile)
         ret, jobid = self.__backend.addNewJob(job)
         if ret is False:
             msg = 'Could not add new job: %s. Check logs for details' % jobName
