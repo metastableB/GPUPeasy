@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from gpupeasy.core.server import GPUPeasyServer
 
 

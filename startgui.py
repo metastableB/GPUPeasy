@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from gpupeasy.webapp.peasyWebGUI import GPUPeasyWebGUI
 
 if __name__ == "__main__":
