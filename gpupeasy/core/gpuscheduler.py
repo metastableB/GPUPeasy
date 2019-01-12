@@ -166,7 +166,8 @@ class GPUSchedulerCore:
             env = os.environ.copy()
             env["CUDA_VISIBLE_DEVICES"] = gpu
             subpro = subprocess.Popen(job.commandList, stdin=None,
-                                      stdout=job.stdout, stderr=job.stderr,
+                                      stdout=job.stdout,
+                                      stderr=subprocess.STDOUT,
                                       env=env)
             job.subprocess = subpro
             job.gpu = gpu
