@@ -280,7 +280,7 @@ class GPUPeasyServer:
         # twice. This means that two instances of GPUSchedulerCore will be
         # started. (You only run and interact with one though).
         self.__logger.pDebug('Starting GPUPeasy server on %s:%s' %(host, port))
-        self.__frontend.run(debug=self.__debug, host=host, port=port,
+        self.__frontend.run(debug=False, host=host, port=port,
                             use_reloader=False)
 
 

@@ -347,7 +347,7 @@ class GPUPeasyWebGUI:
         return render_template('queue.html', jobs=ret)
 
     def run(self, host, port):
-        self.__frontend.run(debug=self.__debug, host=host, port=port)
+        self.__frontend.run(debug=False, host=host, port=port)
 
 
 
