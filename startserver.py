@@ -8,7 +8,7 @@ if __name__ == '__main__':
     debug = True
     host = '0.0.0.0'
     port = '8888'
-    logdir = '/var/gpupeasy/'
+    logdir = '/tmp/gpupeasy/'
     ## End configuration
     gpu = GPUPeasyServer(gpuList, debug=debug, logdir=logdir)
     gpu.run(host=host, port=port)

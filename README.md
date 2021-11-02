@@ -50,7 +50,7 @@ Each job execution will consume one gpu till it is finished and dump its
 `stdout` and `stderr` to `outfile`. 
 
 ## Bug Reports
-- [ ] Since the scheduler opens the output file before scheduling a job, all
+- [X] Since the scheduler opens the output file before scheduling a job, all
   scheduled processes have a open file descriptor. This is bad, as these then
   are never closed and they overshoot the system open file descriptor limit.
 

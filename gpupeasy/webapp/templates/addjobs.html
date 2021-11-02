@@ -37,15 +37,16 @@
 </div>
 
 <div class="row mt-5">
-  <h3>Test Job Command</h3>
+  <h3>Test Job Configuration</h3>
 </div>
 
 <div class="row mt-1">
   <div class="col-sm-12">
-    The job command string is passed to a not so great parser based on
-    <code>shlex</code> which extracts commands and arguments. This is then
-    directly passed onto the <code>subprocess</code> module. The below form can
-    be used to return the lexer output.
+    The job configuration string is passed to the inbuilt (not so great) parser
+    based on <code>shlex</code> which extracts commands and arguments. This is
+    then directly passed onto the <code>subprocess</code> module. The below
+    form can be used to return the lexer output to see if the parsing is
+    working as intended.
   </div>
 </div>
 
@@ -60,12 +61,22 @@
     </form>
   </div>
 </div>
-{% if commandList is defined %}
+{% if jobList is defined %}
 <div class="mt-1 alert alert-info alert-dismissible fade show" role="alert">
+  {% if errorCount is defined %}
+  <strong> Error count:   </strong>{{ errorCount}}<br>
+  {% endif %}
   {% if errorMessage is defined %}
     {{ errorMessage }}<br>
-  {% else %}
-    <strong>Command List:</strong> {{ commandList }}
+  {% endif %}
+  {% if jobList is defined %}
+    <strong>Parsed Job List:</strong><br><br>
+    {% for job in jobList %}
+      {% for k, v in job.items() %}
+      <strong>{{ k }}</strong>: {{v}} <br>
+      {% endfor %}
+      <br>
+    {% endfor %}
   {% endif %}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>

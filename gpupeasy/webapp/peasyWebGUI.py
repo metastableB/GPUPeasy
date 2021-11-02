@@ -6,7 +6,6 @@ from flask import Flask, flash, redirect, jsonify, url_for
 from flask import render_template, request, session, abort
 import requests
 import subprocess
-
 from gpupeasy.core.server import GPUPeasyServer
 
 
@@ -87,7 +86,7 @@ class GPUPeasyWebGUI:
 
     def __addJob(self, jobName, jobOutfile, jobCommand):
         js = {
-            'job':{
+            'job': {
                 'jobName': jobName,
                 'outFile': jobOutfile,
                 'jobCommand': jobCommand
@@ -105,6 +104,7 @@ class GPUPeasyWebGUI:
     def __parseCommand(self, commandString):
         jobCommand = shlex.split(commandString)
         jobCommand = [x.strip() for x in jobCommand]
+        jobCommand = [x for x in jobCommand if len(x) > 0]
         return jobCommand
 
     # URL end-points
@@ -127,22 +127,51 @@ class GPUPeasyWebGUI:
         return render_template('index.html', **msg)
 
     def __testCommandParser(self):
-        jobCommand = request.form['jobCommand']
-        if len(jobCommand) == 0:
+        jobList = request.form['jobCommand']
+        jobList = self.__cleanJobListString(jobList)
+        jobList = jobList.split(';;;')
+        jobList = [x.strip() for x in jobList]
+        jobList = [x for x in jobList if len(x) > 0]
+        if len(jobList) == 0:
             ret = {
                 'status': 'failed', 'commandList': [],
                 'errorMessage': 'Command string cannot be emtpy'
             }
             ret = json.dumps(ret)
             return redirect(url_for('batchAddJobs', messages=ret))
-
-        jobCommand = self.__cleanJobListString(jobCommand)
-        ret = self.__parseCommand(jobCommand)
-        ret = [x.strip() for x in ret]
+        retmsg = []
+        countError = 0
+        jobstr_l = []
+        for job in jobList:
+            jobS = job.split(';;')
+            jobS = [x.strip() for x in jobS]
+            jobS = [x for x in jobS if len(x) > 0]
+            if len(jobS) != 3:
+                msg = 'Malformed job: %s\n\n' % job
+                retmsg.append(msg)
+                countError += 1
+                continue
+            jobName, jobOutF, jobCommand = jobS[0], jobS[1], jobS[2]
+            ret, msg = self.__validateJob(jobName, jobOutF, jobCommand)
+            if ret is False:
+                countError += 1
+                retmsg += 'Error in job: %s: %s\n\n' % (jobName, msg)
+                continue
+            jobCommand = self.__parseCommand(jobCommand)
+            s = {
+                'Job Name': jobName,
+                'Job File': jobOutF,
+                'Job Command': jobCommand,
+            }
+            jobstr_l.append(s)
         ret = {
             'status': 'successful',
-            'commandList': ret,
+            'jobList': jobstr_l,
+            'errorCount': countError
         }
+        if countError > 0:
+            ret['errorMessage'] = '\n'.join(retmsg)
+
         ret = json.dumps(ret)
         return redirect(url_for('batchAddJobs', messages=ret))
 

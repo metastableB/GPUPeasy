@@ -8,6 +8,12 @@ from gpupeasy.utils import Logger, LockedList
 
 class Job:
     def __init__(self, jobname, commandList, stdoutF=None, stderrF=None):
+        '''
+        jobname: A identifier for the job.
+        commandList: The commands to pass onto shell.
+        stdoutF: The file to redirect std out to.
+        stderrF: The file to redirect stderrF to.
+        '''
         self.name = jobname
         self.commandList = commandList
         # File names
@@ -31,24 +37,41 @@ class Job:
         self.stderr.close()
 
     def __str__(self):
-        return '<' + str(self.jobid) + ', ' + self.name +'>'
+        return '<' + str(self.jobid) + ', ' + self.name + '>'
 
     def __repr__(self):
-        return '<' + str(self.jobid) + ', ' + self.name +'>'
+        return '<' + str(self.jobid) + ', ' + self.name + '>'
 
 
 class GPUSchedulerCore:
+    '''
+    The GPU Scheduler core.
+
+    The core attempts to prove the following functionality:
+        1. Maintain queues of commands that re yet to run, have either
+        failed or succeeded.
+        2. Maintain a status of which command is scheduled on which device.
+        3. Allow for adding, deleting, pooling all of these queues.
+
+    Public functions:
+        staratDaemon()
+        addNewJob(job)
+        stopDaemon()
+        # Setters and getters
+        setAvailableGPU(availableGPU)
+        setWakeSec(wakesec)
+        setMaxQueueSize(maxQueueSize)
+        getAvailableGPUList()
+        getCurrAvailableGPUs()
+        getWakesec()
+        getJobsToSchedule()
+        getRunningJobs()
+        getFailedJobs()
+        getJobInfo()
+    '''
     def __init__(self, availableGPU, wakesec=10, maxQueueSize=10000,
                  logger=None):
         '''
-        The GPU Scheduler core.
-
-        The core attempts to prove the following functionality:
-            1. Maintain queues of commands that re yet to run, have either
-            failed or succeeded.
-            2. Maintain a status of which command is scheduled on which device.
-            3. Allow for adding, deleting, pooling all of these queues.
-
         availableGPU: is a list of strings which specify the device ID of the
             GPU's to use. For example, ['1', '2', '3'] will schedule
             jobs on GPU 1, 2 and 3. Also, pass [''], to shedule 1 job on CPU,
@@ -56,7 +79,8 @@ class GPUSchedulerCore:
             ['1', '2', '2'] to schedule 1 job on GPU1 and 2 jobs on GPU2.
         wakesec: The number of seconds between checking of completed jobs/free
             GPUs.
-            availableGPU cannot be changed once the process has started. TODO
+
+        availableGPU cannot be changed once the process has started. TODO
 
         Note that the public methods, only which should be used to modify
         internals, are not thread-safe.
@@ -167,7 +191,7 @@ class GPUSchedulerCore:
             env["CUDA_VISIBLE_DEVICES"] = gpu
             subpro = subprocess.Popen(job.commandList, stdin=None,
                                       stdout=job.stdout,
-                                      stderr=subprocess.STDOUT,
+                                      stderr=job.stderr,
                                       env=env)
             job.subprocess = subpro
             job.gpu = gpu

@@ -1,12 +1,17 @@
 import os
-import shlex
-import re
-from flask import Flask, request, session, jsonify
+from flask import Flask, request, jsonify
 
 from gpupeasy.core.gpuscheduler import GPUSchedulerCore, Job
 from gpupeasy.utils import Logger
 
+
 class GPUPeasyServer:
+    '''
+    The GPUPeasyServer.
+    This server initializes the gpupeasy core scheduler and awaits
+    commands. This is a simple flask based server. Security features and
+    what not are not implemented.
+    '''
     def __init__(self, gpuList, logdir=None, debug=False, wakesec=5):
         '''
         The GPUPeasyServer.
@@ -233,6 +238,8 @@ class GPUPeasyServer:
 
         Returns a json with key 'status' and value 'failed' or 'successful' and
         an additional key 'message' with an error message.
+
+        TODO: Add sanity checks.
         '''
         failed = {'status': 'failed'}
         data = request.get_json()
@@ -275,7 +282,7 @@ class GPUPeasyServer:
 
     def run(self, host, port):
         if not self.__backend.startDaemon():
-            return false
+            return False
         # if user_reloader is set to true, then flask will call initializer
         # twice. This means that two instances of GPUSchedulerCore will be
         # started. (You only run and interact with one though).
@@ -285,5 +292,5 @@ class GPUPeasyServer:
 
 
 if __name__ == '__main__':
-    gpu = GPUPeasyServer(['0', '1', '2'], debug=True)
+    gpu = GPUPeasyServer(['0', '1'], debug=True)
     gpu.run(host='0.0.0.0', port='8888')
