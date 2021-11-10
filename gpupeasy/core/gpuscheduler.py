@@ -7,18 +7,16 @@ from gpupeasy.utils import Logger, LockedList
 
 
 class Job:
-    def __init__(self, jobname, commandList, stdoutF=None, stderrF=None):
+    def __init__(self, jobname, commandList, stdoutF=None):
         '''
         jobname: A identifier for the job.
         commandList: The commands to pass onto shell.
-        stdoutF: The file to redirect std out to.
-        stderrF: The file to redirect stderrF to.
+        stdoutF: The file to redirect std out and std err to.
         '''
         self.name = jobname
         self.commandList = commandList
         # File names
         self.stdoutF = stdoutF
-        self.stderrF = stderrF
         # This will be set once the process has started
         # or finished
         self.subprocess = None
@@ -29,8 +27,6 @@ class Job:
     def openFiles(self):
         if self.stdoutF is not None:
             self.stdout = open(self.stdoutF, 'w+')
-        if self.stderrF is not None:
-            self.stderr = open(self.stderrF, 'w+')
 
     def closeFiles(self):
         self.stdout.close()
@@ -191,7 +187,7 @@ class GPUSchedulerCore:
             env["CUDA_VISIBLE_DEVICES"] = gpu
             subpro = subprocess.Popen(job.commandList, stdin=None,
                                       stdout=job.stdout,
-                                      stderr=job.stderr,
+                                      stderr=job.stdout,
                                       env=env)
             job.subprocess = subpro
             job.gpu = gpu
