@@ -60,7 +60,7 @@ class GPUPeasyServer:
         # Again, will fail with exception.
         logfile = logdir + '/logs.out'
         logfile = open(logfile, 'a+')
-        self.__logger = Logger(fstdout=logfile, fstderr=logfile, debug=debug)
+        self.__logger = Logger(fstdout=logfile, debug=debug)
 
     def __validateJob(self, jobName, jobOutFile, jobCommand):
         '''
@@ -269,7 +269,7 @@ class GPUPeasyServer:
             return jsonify(failed)
         fp.close()
 
-        job = Job(jobName, jobCommand, stdoutF=outFile, stderrF=outFile)
+        job = Job(jobName, jobCommand, stdoutF=outFile)
         ret, jobid = self.__backend.addNewJob(job)
         if ret is False:
             msg = 'Could not add new job: %s. Check logs for details' % jobName

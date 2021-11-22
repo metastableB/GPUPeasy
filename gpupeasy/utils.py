@@ -3,9 +3,8 @@ from datetime import datetime, timedelta
 
 class Logger:
 
-    def __init__(self, fstdout=None, fstderr=None, debug=False):
+    def __init__(self, fstdout=None, debug=False):
         self.__stdout = fstdout
-        self.__stderr = fstderr
         self.__debug = debug
 
     def setDebug(self, val):
@@ -24,11 +23,11 @@ class Logger:
 
     def pError(self, *args):
         ct = self.__currentTimeString()
-        print('[%s] [Error   ]: ' % ct, *args, file=self.__stderr, flush=True)
+        print('[%s] [Error   ]: ' % ct, *args, file=self.__stdout, flush=True)
 
     def pCritical(self, *args):
         ct = self.__currentTimeString()
-        print('[%s] [Critical]: ' % ct, *args, file=self.__stderr, flush=True)
+        print('[%s] [Critical]: ' % ct, *args, file=self.__stdout, flush=True)
 
     def pWarn(self, *args):
         ct = self.__currentTimeString()

@@ -6,7 +6,7 @@ if __name__ == "__main__":
     backendHost = '0.0.0.0'
     backendPort = '8888'
     guiHost = '0.0.0.0'
-    guiPort = '4004'
+    guiPort = '4005'
     debug = True
     ## End Configuration
 
