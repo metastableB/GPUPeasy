@@ -68,3 +68,10 @@ Each job execution will consume one gpu till it is finished and dump its
   regular queue with when priority = 30 or something.
 - [X] Implement a screen where you can view jobinfo and logs.
 - [ ] Need to fix names and conventions throughout. 
+- [X] Fix STDOUT overwriting STDERR error.
+- [ ] Implement better scopping.
+- [ ] !MAJOR TODO: Should you move to `runc` based setup?
+- [ ] !IMPORTANT : Move to `proj-name/job-name/job-id/` like job scoping to
+better handle testing runs etc.
+- [ ] Allow modifying the font end queue through gui -- currently it lists all
+    and every node that was ever started.
