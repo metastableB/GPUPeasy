@@ -30,7 +30,6 @@ class Job:
 
     def closeFiles(self):
         self.stdout.close()
-        self.stderr.close()
 
     def __str__(self):
         return '<' + str(self.jobid) + ', ' + self.name + '>'
@@ -187,7 +186,7 @@ class GPUSchedulerCore:
             env["CUDA_VISIBLE_DEVICES"] = gpu
             subpro = subprocess.Popen(job.commandList, stdin=None,
                                       stdout=job.stdout,
-                                      stderr=job.stdout,
+                                      stderr=subprocess.STDOUT,
                                       env=env)
             job.subprocess = subpro
             job.gpu = gpu
@@ -401,7 +400,6 @@ def main():
     # Add first command
     job = Job('ls00', ['ls', '-l'])
     devnull = open('/tmp/gpus', 'w+')
-    job.stderr = devnull
     job.stdout = devnull
     gpus.addNewJob(job)
     time.sleep(4)
