@@ -75,3 +75,17 @@ Each job execution will consume one gpu till it is finished and dump its
 better handle testing runs etc.
 - [ ] Allow modifying the font end queue through gui -- currently it lists all
     and every node that was ever started.
+- [ ] Usecase 1: One of the biggest reason you cannot keep GPU peasy persistent
+    is that there is no way to kill rouge jobs (crated by say, deleting the job
+    files or those that are in an infinite loop). This requires us to kill
+    gpu-peasy server. 
+
+    Use case 2: Also, sometimes you accidentally kill certain jobs (because you
+    accidentally changes the underlying python file without realizaing a job
+    was using it). There could be other reasons why a job might have failed --
+    errors in the code while debugging and it makes sense to implement a rerun
+    feature.
+
+    1. On the UI, display PID for each job.
+    2. Implement a heart-beat check that removes jobs from queues if an
+       external kill event occurs (say I do kill -9 PID).
