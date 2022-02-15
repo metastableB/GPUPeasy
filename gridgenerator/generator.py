@@ -78,8 +78,10 @@ class ValidGridGenerator():
         fname = job_name + '.esy'
         f = open(fname, 'w+')
         combs = combsdf.to_dict('records')
+        out_dir_list = []
         for j, params in enumerate(combs):
             outdir = os.path.join(out_top_dir, 'job_%s' % j)
+            out_dir_list.append(outdir)
             lg.info("Creating:", outdir)
             os.mkdir(outdir)
             arg_str = ''
@@ -95,8 +97,12 @@ class ValidGridGenerator():
             print(name, file=f, end=';;\n')
             print(outputfile, file=f, end=';;\n')
             print(cmd, file=f, end=';;;\n\n')
+        combsdf['JOB_DIR'] = out_dir_list
+        csv_name = job_name + '.csv'
+        combsdf.to_csv(csv_name, index=False)
         lg.info("Copying grid to top directory:", out_top_dir)
         shutil.copy('./' + fname, out_top_dir)
+        shutil.copy('./' + csv_name, out_top_dir)
         f.close()
         lg.info("Schedule: ")
         lg.info("DONE")
@@ -120,7 +126,7 @@ class ValidGridGenerator():
         scripts = [f for f in files if f.startswith(job_name)]
         if len(scripts) > 0:
             lg.warning("GPU scripts exists :", scripts)
-            valid_f = [f'{job_name}.esy', f'{job_name}.sh']
+            valid_f = [f'{job_name}.esy', f'{job_name}.csv']
             scripts = [f for f in files if f in valid_f]
             lg.warning("These will be removed: ", scripts)
         else:
