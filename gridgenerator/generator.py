@@ -22,6 +22,37 @@ import argparse
 from gridgenerator.utils import CLog as lg
 
 
+class GridConfigBase:
+
+    def __init__(self, OUT_BASE_DIR, SCRIPT):
+        self.__grid_dict = {}
+        self.__grid_str_func = {}
+        self.OUT_BASE_DIR = OUT_BASE_DIR
+        self.SCRIPT = SCRIPT
+
+    def add_param(self, keystring, val, strfunc):
+        '''
+        strfunc: The function to use to convert an individual value to string
+        '''
+        self.__grid_dict[keystring] = val
+        self.__grid_str_func[keystring] = val
+
+    def get_param(self, keystring):
+        self.__grid_dict[keystring]
+
+    def get_str_val(self, keystring, val):
+        '''
+        Converts value for key to string using provided conversion method
+        '''
+        return self.__grid_str_func[keystring](val)
+
+    def get_paramdict(self):
+        return self.__grid_dict
+
+    def reject_invalid(self):
+        raise NotImplementedError
+
+
 class ValidGridGenerator():
 
     def __init__(self, job_name, cfg):
@@ -71,25 +102,21 @@ class ValidGridGenerator():
         # We've lost our keystring information; restore it.
         combsdf = pd.DataFrame(combs)
         combsdf.columns = param_dict.keys()
-        combsdf = cfg.reject_invalid(combsdf)
+        combsdf = cfg.reject_invalid(combsdf).reset_index(drop=True)
         assert len(combsdf) > 0, "No valid configurations found!"
-        lg.info("Valid grid-points found:")
+        lg.info("Num valid grid-points found:", len(combsdf))
         lg.info('\n', combsdf)
         fname = job_name + '.esy'
         f = open(fname, 'w+')
         combs = combsdf.to_dict('records')
         out_dir_list = []
         for j, params in enumerate(combs):
-            outdir = os.path.join(out_top_dir, 'job_%s' % j)
-            out_dir_list.append(outdir)
-            lg.info("Creating:", outdir)
-            os.mkdir(outdir)
             arg_str = ''
             for key in params.keys():
                 arg_str += ' ' + key + ' ' + str(params[key])
             name = '%s_job_%s' % (job_name, j)
             outdir = os.path.join(out_top_dir, name)
-            lg.info("Creating:", outdir)
+            out_dir_list.append(outdir)
             os.mkdir(outdir)
             cmd = f'python -u {cfg.SCRIPT} --out-folder {outdir} {arg_str}'
             outputfile = os.path.join(outdir, 'gpupeasy_logs.out')
