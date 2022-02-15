@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+# A general script to create parameter configurations for GPUPeasy.
+#
+# This grid off-loads the parameter configurations to a grid-config class
+# and works as long as this class is configured correctly.
+#
+# Usage:
+#   python gridgen.py GRIDCONFIG.py PROJ_NAME ACTION
+#
+# We support 3 actions:
+#
+# build: Create the folders for jobs and peasy scripts for it.
+# clean: Remove a project
+#   - Removes scripts
+#   - Removes dump folder
+# cbuild: clean and build.
+from gridgenerator.generator import main
+
+if __name__ == '__main__':
+    main()
