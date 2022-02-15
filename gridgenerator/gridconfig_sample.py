@@ -1,69 +1,47 @@
 import numpy as np
-import importlib
+import os
+from gridgenerator.generator import driver, GridConfigBase
 
 
-class GridConfigBase:
-    # The base directory to use. Logs for each job will be saved in
-    # job-specific folder under
-    #   base_dir/proj_name/job_id*
-    #
-    # Example: OUT_BASE_DIR = os.path.join(os.environ['MODEL_DUMP_NOISE'], 'rdx0')
-    OUT_BASE_DIR = None
+class GridConfigExA1(GridConfigBase):
+    OUT_BASE_DIR = os.environ['RDX_EXPS_DIR']
     # The script to run
-    f = 'rdx/train_ccnn_rdx.py'
-    SCRIPT = '/home/t-dondennis/noisesupp/scripts/' + f
+    SCRIPT = '/home/dondennis/Work/tensorrdx/rdx_exps/resnet_cifar/trainer.py'
 
     def __init__(self):
-        self.__grid_dict = {}
-        self.__grid_str_func = {}
+        super().__init__(GridConfigExA1.OUT_BASE_DIR, GridConfigExA1.SCRIPT)
+        DATASET = ['CIFAR10']
+        MODEL_VARIANT = ['ResNet20']
+        BATCH_SIZE = [256]
+        NUM_EPOCHS = [500]
+        # POOL_DIM_1 will be made equal to Pool dim0
+        POOL_DIM0 = [32, 128]
+        FC_DIM0 = [8, 32, 256]
+        SHORTC_IN = ['out0', 'out_l1', 'out_l2']
+        SHORTC_OUT = ['out_l1', 'out_l2', 'out_l3']
+        LOSS_LAMBDA = [10.0]
+        SIGMA_BASE = [0.95]
+        LEARNING_RATE = [0.1]
+        RDX_ONLY = ['--rdx-only-training']
 
-    def add_param(self, keystring, val, strfunc):
-        '''
-        strfunc: The function to use to convert an individual value to string
-        '''
-        self.__grid_dict[keystring] = val
-        self.__grid_str_func[keystring] = val
-
-    def get_param(self, keystring):
-        self.__grid_dict[keystring]
-
-    def get_str_val(self, keystring, val):
-        '''
-        Converts value for key to string using provided conversion method
-        '''
-        return self.__grid_str_func[keystring](val)
-
-    def get_paramdict(self):
-        return self.__grid_dict
-
-    def reject_invalid(self):
-        raise NotImplementedError
-
-
-class GridConfigExD1(GridConfigBase):
-    def __init__(self):
-        super().__init__()
-        NUM_ITER = [600]
-        NUM_EPOCH = [300]
-        SHORTC_IN = ['enc03', 'enc05', 'enc06']
-        SHORTC_OUT = ['enc07', 'enc08', 'enc10']
-        HID_DIM0 = [256, 512]
-        HID_DIM1 = [256, 512]
-        RDX_NAME = ['rnnpool']
-        CKPT_FILE = ['/data/t-dondennis/MODEL_DUMP_2/noisesupp/kaz_noise/'
-                     + 'v141d00_model/out/model.ckpt-288']
-        self.add_param('--num-itr', NUM_ITER, str)
-        self.add_param('--epochs', NUM_EPOCH, str)
+        self.add_param('--data-set', DATASET, str)
+        self.add_param('--model-variant', MODEL_VARIANT, str)
+        self.add_param('--batch-size', BATCH_SIZE, int)
+        self.add_param('--num-epochs', NUM_EPOCHS, int)
+        self.add_param('--pool-dim0', POOL_DIM0, int)
+        self.add_param('--pool-dim1', POOL_DIM0, int)
+        self.add_param('--fc-dim0', FC_DIM0, int)
+        self.add_param('--fc-dim1', FC_DIM0, int)
         self.add_param('--shortc-in', SHORTC_IN, str)
         self.add_param('--shortc-out', (SHORTC_OUT), str)
-        self.add_param('--hid-dim0', (HID_DIM0), str)
-        self.add_param('--hid-dim1', (HID_DIM1), str)
-        self.add_param('--rdx-name', RDX_NAME, str)
-        self.add_param('--model-file', CKPT_FILE, str)
+        self.add_param('--loss-lambda', LOSS_LAMBDA, float)
+        self.add_param('--sigma-base', SIGMA_BASE, float)
+        self.add_param('--learning-rate', LEARNING_RATE, float)
+        self.add_param('--rdx-only-training', RDX_ONLY, str)
         self.reject_invalid = self.rej_invalid1
 
     def __repr__(self):
-        return "Test config"
+        return "ExA1: Basic grid search. Fc_dim0 = fc_dim1, same for rnn."
 
     def __str__(self):
         return self.__repr__()
@@ -73,17 +51,26 @@ class GridConfigExD1(GridConfigBase):
         cords: A list of dicts. Each dict contains a keystring -> value pair.
 
         1. reject all jobs where shortc_in >= shortc_out
-        2. reject all jobs where hid0 != hid1
+        2. reject all jobs where fc_hid0 != fc_hid1
+        3. reject all jobs where pool_hid0 != pool_hid1
         '''
         # Remove all where hid dimensions differ
         df = cordsdf
-        df = df[df['--hid-dim0'] == df['--hid-dim1']]
+        df = df[df['--fc-dim0'] == df['--fc-dim1']]
+        df = df[df['--pool-dim0'] == df['--pool-dim1']]
         # Remove all where in >= out
         in_, out_ = df['--shortc-in'].values, df['--shortc-out'].values
-        in_ = [int(x[3:]) for x in in_]
-        out_ = [int(x[3:]) for x in out_]
-        indices = np.array(in_) < np.array(out_)
+        in_int = [int(x_[-1]) for x_ in in_]
+        out_int = [int(x_[-1]) for x_ in out_]
+        indices = np.array(in_int) < np.array(out_int)
         df = df[indices]
         return df
+
+
+if __name__ == '__main__':
+    grid_dict = {
+        'ExA1': GridConfigExA1
+    }
+    driver(grid_dict)
 
 

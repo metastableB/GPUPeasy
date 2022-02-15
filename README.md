@@ -55,13 +55,29 @@ Each job execution will consume one gpu till it is finished and dump its
   are never closed and they overshoot the system open file descriptor limit.
 
 ## Features to Add
+
+**Important**
+
+- [ ] Support for changing devices. Adding/Subtracting GPU without killing the
+  server. Ask the user to delete GPU objects and add new objects. So that I
+  don't have to worry about killing/migrating processes. We can just kill
+  existing processes or let them finish and not schedule any more on the
+  deleted gpu.
+- [ ] Jobs read python file from disk on when the run starts. If the file
+    changes between the enqueue and service, we load the new file. This could
+    be a problem if the new file has bugs. Copy to a cash directory and run
+    from there?
+
+**Not so critical**
+
+- [ ] Depricate `.peasy` files in favour of `.csv` files. Since we now have a
+    way of parsing commands from csv file, we can support better use-cases.
+    There is no need to support `.peasy` syntax if the scheduler implements the
+    `csv` to `.peasy` conversion (see current `gridgen`).
 - [ ] Kill a job
 - [ ] Pause scheduler (very useful when all the scheduled jobs have an error)
 - [ ] Redo the schedule-job process such that it is amenable to network
   scheduling in the future.
-- [ ] Support for changing devices. Adding/Subtracting GPU without killing the
-  server. Ask the user to delete GPU objects and add new objects. So that I
-  don't have to worry about killing/migrating processes.
 - [ ] Support for checkpointing.
 - [ ] Support for prioritizing jobs. This can be done by implementing priority
   queues. Replace the current list queue with priority queue that reduces to a
@@ -71,8 +87,8 @@ Each job execution will consume one gpu till it is finished and dump its
 - [X] Fix STDOUT overwriting STDERR error.
 - [ ] Implement better scopping.
 - [ ] !MAJOR TODO: Should you move to `runc` based setup?
-- [ ] !IMPORTANT : Move to `proj-name/job-name/job-id/` like job scoping to
-better handle testing runs etc.
+- [X] !IMPORTANT : Move to `proj-name/job-name/job-id/` like job scoping to
+better handle testing runs etc. (We do proj-name/job-name-id/)
 - [ ] Allow modifying the font end queue through gui -- currently it lists all
     and every node that was ever started.
 - [ ] Usecase 1: One of the biggest reason you cannot keep GPU peasy persistent
