@@ -118,7 +118,7 @@ class ValidGridGenerator():
             outdir = os.path.join(out_top_dir, name)
             out_dir_list.append(outdir)
             os.mkdir(outdir)
-            cmd = f'python -u {cfg.SCRIPT} --out-folder {outdir} {arg_str}'
+            cmd = f'python -u {cfg.SCRIPT} --out-dir {outdir} {arg_str}'
             outputfile = os.path.join(outdir, 'gpupeasy_logs.out')
             # Use print to write to file
             print(name, file=f, end=';;\n')
