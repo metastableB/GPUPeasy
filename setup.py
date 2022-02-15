@@ -3,7 +3,6 @@ from distutils.core import setup
 setup(
     name='gpupeasy',
     version='0.1',
-    packages=['gpupeasy'],
+    packages=['gpupeasy', 'gridgenerator'],
     long_description="A simple package to make parameter sweeps on GPUs easy",
-    scripts=['gridgenerator/gridgen']
 )

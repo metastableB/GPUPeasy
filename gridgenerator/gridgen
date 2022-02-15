@@ -14,7 +14,7 @@
 #   - Removes scripts
 #   - Removes dump folder
 # cbuild: clean and build.
-from gridgenerator.generator import main
+from gridgenerator.generator import driver
 
 if __name__ == '__main__':
-    main()
+    driver()

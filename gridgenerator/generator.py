@@ -150,8 +150,6 @@ def CLIArgs():
     a gridconfig class (see example). This program produces a `.peasy` file for
     GPU-peasy. """
     parser = argparse.ArgumentParser(description=hstr)
-    parser.add_argument("-g", "--grid-config", help="Python script with" +
-                        "grid-config information.", required=True)
     parser.add_argument("-p", "--proj-name", help="Project name to use",
                         required=True)
     parser.add_argument("--clean", help="Clean the project directory.",
@@ -172,15 +170,16 @@ def CLIArgs():
     return args
 
 
-def main():
+def driver(grid_dict):
+    """
+    gird_dict: A dictionary mapping project names to corresponding grid-gen
+        classes.
+    """
     args = CLIArgs()
-    cfg_file = args.grid_config
     proj_name = args.proj_name
     action = args.action
     ALL_ACTIONS = ['build', 'clean', 'cbuild']
-    assert os.path.exists(cfg_file), f"File does not exist: {cfg_file}"
-    cfg = __import__(cfg_file)
-    grid = cfg.GRID_DICT[proj_name]
+    grid = grid_dict[proj_name]
     gridgen = ValidGridGenerator(proj_name, grid)
     assert action in ALL_ACTIONS
     if action == 'clean':
