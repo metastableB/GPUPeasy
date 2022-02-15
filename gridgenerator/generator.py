@@ -50,7 +50,7 @@ class ValidGridGenerator():
         assert os.path.exists(cfg.OUT_BASE_DIR), msg
         msg = f"{out_top_dir} is not empty."
         if os.path.exists(out_top_dir):
-            assert os.path.isempty(out_top_dir), msg
+            assert len(os.listdir(out_top_dir)) == 0, msg
         else:
             lg.info("Creating: ", out_top_dir)
             try:
@@ -167,6 +167,8 @@ def CLIArgs():
     elif args.cbuild:
         action = 'cbuild'
     args.action = action
+    if not args.action:
+        parser.error('No action requested, add clean, build or cbuild.')
     return args
 
 
@@ -179,9 +181,10 @@ def driver(grid_dict):
     proj_name = args.proj_name
     action = args.action
     ALL_ACTIONS = ['build', 'clean', 'cbuild']
-    grid = grid_dict[proj_name]
+    grid = grid_dict[proj_name]()
     gridgen = ValidGridGenerator(proj_name, grid)
     assert action in ALL_ACTIONS
+    lg.info("Performing: ", action)
     if action == 'clean':
         gridgen.clean()
     elif action == 'build':
