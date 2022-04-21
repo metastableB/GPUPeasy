@@ -19,16 +19,18 @@ import os
 import shutil
 import pandas as pd
 import argparse
+from tqdm import trange
 from gridgenerator.utils import CLog as lg
 
 
 class GridConfigBase:
 
-    def __init__(self, OUT_BASE_DIR, SCRIPT):
+    def __init__(self, OUT_BASE_DIR, SCRIPT, SUMMARY_KEYS=None):
         self.__grid_dict = {}
         self.__grid_str_func = {}
         self.OUT_BASE_DIR = OUT_BASE_DIR
         self.SCRIPT = SCRIPT
+        self.SUMMARY_KEYS = SUMMARY_KEYS
 
     def add_param(self, keystring, val, strfunc):
         '''
@@ -50,6 +52,19 @@ class GridConfigBase:
         return self.__grid_dict
 
     def reject_invalid(self):
+        raise NotImplementedError
+
+    def extractor(self, keys, alldata):
+        """
+        Return a dict of value, for each element in keys. This will be used to
+        summarize experiments.
+        """
+        raise NotImplementedError
+
+    def show(self, dfsumm):
+        """
+        override to display summary dataframe
+        """
         raise NotImplementedError
 
 
@@ -177,31 +192,46 @@ class ValidGridGenerator():
         lg.info("Done.")
 
 
+def summarizer(projname, gridconfig):
+        """
+        A quick way to provide and extract summaries. Needs the `extractor()`
+        function and `SUMMARY_KEYS` to be defined.
+        """
+        extractor = gridconfig.extractor
+        keys = gridconfig.SUMMARY_KEYS
+        assert keys is not None, "No keys provided to summarize"
+        exp_path = gridconfig.OUT_BASE_DIR
+        exp_path = os.path.join(exp_path, projname)
+        assert os.path.exists(exp_path), f"Not found: {exp_path}"
+        # If found, load the dataframe containing the parameters
+        dfpath = os.path.join(exp_path, projname + '.csv')
+        paramdf = pd.read_csv(dfpath)
+        file_list = paramdf['JOB_DIR'].values
+        valdict = {k: [] for k in keys}
+        with trange(len(file_list)) as t:
+            for i in t:
+                f = os.path.join(file_list[i], 'gpupeasy_logs.out')
+                # Description will be displayed on the left
+                t.set_description(f'Processing: {f}')
+                with open(f, 'r') as fp:
+                    data = fp.read()
+                    ret = extractor(keys, data)
+                for key in keys:
+                    valdict[key].extend(ret[key])
+        return paramdf
+
+
 def CLIArgs():
-    hstr = """A simple program to generate valid configurations supported by
-    GPUPease for grid-searches. The exact grid is configured through the use of
-    a gridconfig class (see example). This program produces a `.peasy` file for
-    GPU-peasy. """
+    hstr = """v0.1\nA simple program to generate valid configurations supported
+    by GPUPease for grid-searches. The exact grid is configured through the use
+    of a gridconfig class (see example). This program produces a `.peasy` file
+    for GPU-peasy. """
     parser = argparse.ArgumentParser(description=hstr)
     parser.add_argument("-p", "--proj-name", help="Project name to use",
                         required=True)
-    parser.add_argument("--clean", help="Clean the project directory.",
-                        action='store_true', default=False)
-    parser.add_argument("--build", help="Write grid configuration to .peasy" +
-                        "file.", action="store_true", default=False)
-    parser.add_argument("--cbuild", help="Equivalent to clean + build.",
-                        default=False, action="store_true")
+    parser.add_argument("action", help="Action to take in " +
+                        "[summarize, build, clean, cbuild]")
     args = parser.parse_args()
-    action = None
-    if args.clean:
-        action = 'clean'
-    elif args.build:
-        action = 'build'
-    elif args.cbuild:
-        action = 'cbuild'
-    args.action = action
-    if not args.action:
-        parser.error('No action requested, add clean, build or cbuild.')
     return args
 
 
@@ -213,7 +243,7 @@ def driver(grid_dict):
     args = CLIArgs()
     proj_name = args.proj_name
     action = args.action
-    ALL_ACTIONS = ['build', 'clean', 'cbuild']
+    ALL_ACTIONS = ['build', 'clean', 'cbuild', 'summarize']
     grid = grid_dict[proj_name]()
     gridgen = ValidGridGenerator(proj_name, grid)
     assert action in ALL_ACTIONS
@@ -225,3 +255,6 @@ def driver(grid_dict):
     elif action == 'cbuild':
         gridgen.clean()
         gridgen.create_grid_gpupeasy()
+    elif action == 'summarize':
+        df = summarizer(proj_name, grid)
+        grid.show(df)

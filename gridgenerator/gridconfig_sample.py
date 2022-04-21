@@ -3,13 +3,23 @@ import os
 from gridgenerator.generator import driver, GridConfigBase
 
 
-class GridConfigExA1(GridConfigBase):
+class GridConfigSample(GridConfigBase):
     OUT_BASE_DIR = os.environ['RDX_EXPS_DIR']
-    # The script to run
     SCRIPT = '/home/dondennis/Work/tensorrdx/rdx_exps/resnet_cifar/trainer.py'
 
     def __init__(self):
-        super().__init__(GridConfigExA1.OUT_BASE_DIR, GridConfigExA1.SCRIPT)
+        """
+        A sample grid configuration. To generate a custom grid configuration
+        for your project;
+            1. Extend the GridConfigBase class. The base class needs to be
+            configured with a BASE_DIR and the script directory.
+            BASE_DIR: The directory containing all project specific
+            directories. Project directories will be created as
+            sub-directories.
+            2. Use `add_param` to add parameters to the grid.
+            3. Use `__call__` to generate the final method.
+        """ 
+        super().__init__(GridConfigSample.OUT_BASE_DIR, GridConfigSample.SCRIPT)
         DATASET = ['CIFAR10']
         MODEL_VARIANT = ['ResNet20']
         BATCH_SIZE = [256]
