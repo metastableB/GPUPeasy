@@ -218,6 +218,8 @@ def summarizer(projname, gridconfig):
                     ret = extractor(keys, data)
                 for key in keys:
                     valdict[key].extend(ret[key])
+        for key in keys:
+            paramdf[key] = valdict[key]
         return paramdf
 
 
