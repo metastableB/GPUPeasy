@@ -32,21 +32,23 @@ class GridConfigBase:
         self.SCRIPT = SCRIPT
         self.SUMMARY_KEYS = SUMMARY_KEYS
 
-    def add_param(self, keystring, val, strfunc):
-        '''
-        strfunc: The function to use to convert an individual value to string
-        '''
+    def add_param(self, keystring, val):
         self.__grid_dict[keystring] = val
-        self.__grid_str_func[keystring] = val
+
+    def var_to_key(self, var):
+        #ARG_A_B_C
+        var = '--' + '-'.join(var[4:].split('_'))
+        return var
+
+    def __call__(self):
+        args = self.__dict__
+        vargs = [k for k in args.keys() if k.startswith('ARG')]
+        for var in vargs:
+            k = self.var_to_key(var)
+            self.add_param(k, args[var])
 
     def get_param(self, keystring):
         self.__grid_dict[keystring]
-
-    def get_str_val(self, keystring, val):
-        '''
-        Converts value for key to string using provided conversion method
-        '''
-        return self.__grid_str_func[keystring](val)
 
     def get_paramdict(self):
         return self.__grid_dict
@@ -246,7 +248,10 @@ def driver(grid_dict):
     proj_name = args.proj_name
     action = args.action
     ALL_ACTIONS = ['build', 'clean', 'cbuild', 'summarize']
+    # __init__
     grid = grid_dict[proj_name]()
+    # __call__
+    grid()
     gridgen = ValidGridGenerator(proj_name, grid)
     assert action in ALL_ACTIONS
     lg.info("Performing: ", action)
