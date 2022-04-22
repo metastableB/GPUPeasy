@@ -69,6 +69,14 @@ class GridConfigBase:
         """
         raise NotImplementedError
 
+    def __repr__(self):
+        if self.__doc__:
+            return self.__doc__
+        return "No docstring provided"
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class ValidGridGenerator():
 
@@ -111,6 +119,7 @@ class ValidGridGenerator():
     
     def create_grid_gpupeasy(self):
         cfg, job_name = self.cfg, self.job_name
+        lg.info("Project:\n\n", self.cfg, "\n")
         out_top_dir = self.__get_valid_outdir__()
         param_dict = cfg.get_paramdict()
         combs = [param_dict[keystr] for keystr in param_dict.keys()]
