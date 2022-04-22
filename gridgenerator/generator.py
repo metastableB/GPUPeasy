@@ -26,6 +26,7 @@ from gridgenerator.utils import CLog as lg
 class GridConfigBase:
 
     def __init__(self, OUT_BASE_DIR, SCRIPT, SUMMARY_KEYS=None):
+        self.__call_called = False
         self.__grid_dict = {}
         self.__grid_str_func = {}
         self.OUT_BASE_DIR = OUT_BASE_DIR
@@ -46,11 +47,18 @@ class GridConfigBase:
         for var in vargs:
             k = self.var_to_key(var)
             self.add_param(k, args[var])
+        self.__call_called = True
 
     def get_param(self, keystring):
+        if not self.__call_called:
+            lg.fail("__call__ not invoked")
+            exit()
         self.__grid_dict[keystring]
 
     def get_paramdict(self):
+        if not self.__call_called:
+            lg.fail("__call__ not invoked")
+            exit()
         return self.__grid_dict
 
     def reject_invalid(self):
@@ -257,10 +265,7 @@ def driver(grid_dict):
     proj_name = args.proj_name
     action = args.action
     ALL_ACTIONS = ['build', 'clean', 'cbuild', 'summarize']
-    # __init__
     grid = grid_dict[proj_name]()
-    # __call__
-    grid()
     gridgen = ValidGridGenerator(proj_name, grid)
     assert action in ALL_ACTIONS
     lg.info("Performing: ", action)
