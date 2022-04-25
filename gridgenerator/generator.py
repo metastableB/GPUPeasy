@@ -147,7 +147,8 @@ class ValidGridGenerator():
         for j, params in enumerate(combs):
             arg_str = ''
             for key in params.keys():
-                arg_str += ' ' + key + ' ' + str(params[key])
+                if pd.notnull(params[key]):
+                    arg_str += ' ' + key + ' ' + str(params[key])
             name = '%s_job_%s' % (job_name, j)
             outdir = os.path.join(out_top_dir, name)
             out_dir_list.append(outdir)
@@ -265,7 +266,9 @@ def driver(grid_dict):
     proj_name = args.proj_name
     action = args.action
     ALL_ACTIONS = ['build', 'clean', 'cbuild', 'summarize']
+    #__init__()__call__()
     grid = grid_dict[proj_name]()
+    grid()
     gridgen = ValidGridGenerator(proj_name, grid)
     assert action in ALL_ACTIONS
     lg.info("Performing: ", action)

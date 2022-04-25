@@ -32,6 +32,7 @@ class GPUPeasyWebGUI:
         fe.add_url_rule('/batchaddjobs', 'batchAddJobs', self.__batchAddJobs,
                         methods=['GET', 'POST'])
         fe.add_url_rule('/jobinfo/<jobID>', 'getJobInfo', self.__getJobInfo)
+        # TODO: Add link to tensorboard
         fe.add_url_rule('/testCommandParser', 'testCommandParser',
                         self.__testCommandParser, methods=['POST'])
         fe.add_url_rule('/successfuljobs', 'getSuccessfulJobs',
