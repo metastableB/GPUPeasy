@@ -127,7 +127,47 @@ class ValidGridGenerator():
     
     def create_grid_gpupeasy(self):
         cfg, job_name = self.cfg, self.job_name
+        out_top_dir = self.__get_valid_outdir__()
         lg.info("Project:\n\n", self.cfg, "\n")
+        combsdf, job_list = self.__create_grid()
+        fname = job_name + '.esy'
+        f = open(fname, 'w+')
+        for job in job_list:
+            name, outf = job['name'], job['out_file']
+            cmd = job['cmd']
+            print(name, file=f, end=';;\n')
+            print(outf, file=f, end=';;\n')
+            print(cmd, file=f, end=';;;\n\n')
+        csv_name = job_name + '.csv'
+        combsdf.to_csv(csv_name, index=False)
+        lg.info("\n", combsdf)
+        lg.info("Copying grid to top directory:", out_top_dir)
+        shutil.copy('./' + fname, out_top_dir)
+        shutil.copy('./' + csv_name, out_top_dir)
+        f.close()
+        lg.info("Schedule: ")
+        lg.info("DONE")
+
+    def get_grid(self):
+        job_names, job_logs, job_cmds = [], [], []
+        cfg, job_name = self.cfg, self.job_name
+        out_top_dir = self.__get_valid_outdir__()
+        combsdf, job_list = self.__create_grid()
+        for job in job_list:
+            name, outf = job['name'], job['out_file']
+            cmd = job['cmd']
+            job_names.append(name)
+            job_logs.append(outf)
+            job_cmds.append(cmd)
+        df = pd.DataFrame({
+            'Job-name':job_names,
+            'Output-file': job_logs,
+            'Job-command': job_cmds}
+        )
+        return df
+    
+    def __create_grid(self, ordering=None):
+        cfg, job_name = self.cfg, self.job_name
         out_top_dir = self.__get_valid_outdir__()
         param_dict = cfg.get_paramdict()
         combs = [param_dict[keystr] for keystr in param_dict.keys()]
@@ -138,15 +178,14 @@ class ValidGridGenerator():
         combsdf.columns = param_dict.keys()
         combsdf = cfg.reject_invalid(combsdf).reset_index(drop=True)
         assert len(combsdf) > 0, "No valid configurations found!"
-        lg.info("Num valid grid-points found:", len(combsdf))
-        lg.info('\n', combsdf)
-        fname = job_name + '.esy'
-        f = open(fname, 'w+')
         combs = combsdf.to_dict('records')
         out_dir_list = []
+        job_list = []
         for j, params in enumerate(combs):
             arg_str = ''
-            for key in params.keys():
+            if ordering is None:
+                keyordering = params.keys()
+            for key in keyordering:
                 if pd.notnull(params[key]):
                     arg_str += ' ' + key + ' ' + str(params[key])
             name = '%s_job_%s' % (job_name, j)
@@ -156,18 +195,11 @@ class ValidGridGenerator():
             cmd = f'python -u {cfg.SCRIPT} --out-dir {outdir} {arg_str}'
             outputfile = os.path.join(outdir, 'gpupeasy_logs.out')
             # Use print to write to file
-            print(name, file=f, end=';;\n')
-            print(outputfile, file=f, end=';;\n')
-            print(cmd, file=f, end=';;;\n\n')
+            job_list.append({'name': name, 'out_file': outputfile,
+                             'cmd': cmd})
+
         combsdf['JOB_DIR'] = out_dir_list
-        csv_name = job_name + '.csv'
-        combsdf.to_csv(csv_name, index=False)
-        lg.info("Copying grid to top directory:", out_top_dir)
-        shutil.copy('./' + fname, out_top_dir)
-        shutil.copy('./' + csv_name, out_top_dir)
-        f.close()
-        lg.info("Schedule: ")
-        lg.info("DONE")
+        return combsdf, job_list
 
     def clean(self):
         cfg, job_name = self.cfg, self.job_name
