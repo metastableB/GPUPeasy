@@ -164,7 +164,7 @@ class ValidGridGenerator():
             'Output-file': job_logs,
             'Job-command': job_cmds}
         )
-        return df
+        return df, combsdf
     
     def __create_grid(self, ordering=None):
         cfg, job_name = self.cfg, self.job_name
@@ -263,11 +263,17 @@ def summarizer(projname, gridconfig):
         with trange(len(file_list)) as t:
             for i in t:
                 f = os.path.join(file_list[i], 'gpupeasy_logs.out')
+                if not os.path.exists(f):
+                    f = os.path.join(file_list[i], 'slurm.log')
+                if os.path.exists(f):
+                    t.set_description(f'Processing: {f}')
+                    with open(f, 'r') as fp:
+                        data = fp.read()
+                        ret = extractor(keys, data)
+                else:
+                    lg.warning("Log file not found: ", file_list[i])
+                    ret = extractor(keys, '')
                 # Description will be displayed on the left
-                t.set_description(f'Processing: {f}')
-                with open(f, 'r') as fp:
-                    data = fp.read()
-                    ret = extractor(keys, data)
                 for key in keys:
                     valdict[key].extend(ret[key])
         for key in keys:
